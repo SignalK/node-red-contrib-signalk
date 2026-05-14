@@ -8,7 +8,7 @@ export default function(RED) {
 
     const server = RED.nodes.getNode(config.server)
 
-    node.on('input', msg => {
+    node.on('input',  msg => {
       try {
         if (msg.requestId) {
           const resp = {
@@ -17,9 +17,11 @@ export default function(RED) {
             "statusCode": msg.statusCode || 500,
             message: msg.message
           }
-          if (server.send(node, resp)) {
-            debug('sending put error response %j', resp)
-          }
+          server.send(node, resp).then((sent) => {
+            if ( sent ) {
+              debug('sending put error response %j', resp)
+            }
+          })
         } else {
           node.error('No requestId provided for put response')
         }

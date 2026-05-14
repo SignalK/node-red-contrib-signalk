@@ -46,9 +46,12 @@ export default function(RED) {
           if (config.source && config.source.length > 0) {
             delta.updates[0].$source = config.source
           }
-          this.server.client.connection.send(delta)
-          debug('sending meta for path %s with value %j', path, delta)
-          sentMeta[path] = true
+          this.server.send(node, delta).then((sent) => {
+            if (sent) {
+              debug('sending meta for path %s with value %j', path, delta)
+              sentMeta[path] = true
+            }
+          })
         }
 
         let delta = {
@@ -68,9 +71,11 @@ export default function(RED) {
         }
         let c = path.lastIndexOf('.')
         debug('sending delta for path %s with value %j', path, delta)
-        if (this.server.send(node, delta)) {
-          showStatus(`${path.substring(c + 1)}: ${msg.payload}`)
-        }
+        this.server.send(node, delta).then((sent) => {
+          if (sent) {
+            showStatus(`${path.substring(c + 1)}: ${msg.payload}`)
+          }
+        })
       } catch (err) {
         this.server.onError(node, err)
       }

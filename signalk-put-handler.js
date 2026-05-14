@@ -17,9 +17,11 @@ export default function(RED) {
           "state": "PENDING",
           "statusCode": 202
         }
-        if ( server.send(node, resp) ) {
-          debug('sending put response %j', resp)
-        }
+        server.send(node, resp).then((sent) => {
+          if (sent) {
+            debug('sending put response %j', resp)
+          }
+        })
         return { state: 'PENDING' }
       } else {
         node.send({topic: path, payload: value})
@@ -28,9 +30,11 @@ export default function(RED) {
           "state": "COMPLETED",
           "statusCode": 200
         }
-        if ( server.send(node, resp) ) {
-          debug('sending put response %j', resp)
-        }
+        server.send(node, resp).then((sent) => {
+          if (sent) {
+            debug('sending put response %j', resp)
+          }
+        })
         return { state: 'SUCCESS' }
       }
     }
@@ -48,9 +52,11 @@ export default function(RED) {
             }
         ]
       }
-      if ( server.send(node, meta) ) {
-        debug('sending meta for put handler %j', meta)
-      }
+      server.send(node, meta).then((sent) => {
+        if (sent) {
+          debug('sending meta for put handler %j', meta)
+        }
+      })
     }
     server.client.on('connect', onConnect)
 

@@ -23,9 +23,11 @@ export default function(RED) {
     
     node.on('input', msg => {
       debug('sending delta %j', msg.payload)
-      if ( server.send(node, msg.payload) ) {
-        showStatus()
-      }
+      server.send(node, msg.payload).then((sent) => {
+        if (sent) {
+          showStatus()
+        }
+      })
     })
   }
   RED.nodes.registerType("signalk-send-delta", signalKSendDelta);

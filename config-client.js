@@ -6,15 +6,13 @@ import coreDebug from 'debug'
 export default function (RED) {
   'use strict'
 
-  const debug = coreDebug('node-red-contrib-signalk:config-client')
-
   function ConfigSignalKClient (config) {
-    debug('ConfigSignalKClient constructor called')
-
     RED.nodes.createNode(this, config)
 
     this.hostname = config.hostname
     this.port = config.port
+
+    const debug = coreDebug(`node-red-contrib-signalk:config-client-${this.hostname}:${this.port}`)
 
     this.client = new Client({
       hostname: this.hostname,
@@ -32,31 +30,34 @@ export default function (RED) {
 
     this.client.connect()
     .then(() => {
-      debug('ConfigSignalKClient connected to server, self', this.client.self)
-
-      this.client.authenticate(config.username, config.password)
+      debug('connected to server, self', this.client.self)
     })
     .catch(err => {
-      debug('ConfigSignalKClient connection error:', err)
+      debug('connection error:', err)
       this.error('Error connecting to Signal K server: ' + err.message)
+    })
+
+    this.client.on('connect', () => {
+      debug('authenticating...')
+      this.client.authenticate(config.username, config.password)
     })
 
     this.client.on('self', (self) => {
       this.self = self
     })
 
-    debug('ConfigSignalKClient created with hostname %s and port %d', this.hostname, this.port)
+    debug('created with hostname %s and port %d', this.hostname, this.port)
     
-    this.on('close', function (done) {
-      debug('ConfigSignalKClient closing connection')
+    this.on('close', (done) => {
+      debug('closing connection')
       if (this.client) {
         this.client.close()
       }
       done()
     })
 
-    this.client.on('error', function (err) {
-      this.error('ConfigSignalKClient error:', err)
+    this.client.on('error', (err) => {
+      this.error('error: ' + JSON.stringify(err))
     })
 
     this.onError = (node, err) => {
@@ -65,15 +66,24 @@ export default function (RED) {
     }
 
     this.send = (node, msg) => {
-      if (this.client && this.client.connection) {
-        this.client.connection.send(msg)
-        return true
-      } else {
-        const msg = 'Not connected to Signal K server'
-        node.error(msg)
-        node.status({fill:"red",shape:"dot",text:msg})
-        return false
-      }
+      return new Promise((resolve, reject) => {
+        if (this.client && this.client.connection) {
+          this.client.connection.send(msg)
+            .then(() => {
+              resolve(true)
+            })
+            .catch(err => {
+              node.error('error sending message: ' + JSON.stringify(err))
+              node.status({ fill: "red", shape: "dot", text: 'error sending message' })
+              resolve(false)
+            })
+        } else {
+          const msg = 'Not connected to Signal K server'
+          node.error(msg)
+          node.status({ fill: "red", shape: "dot", text: msg })
+          resolve(false)
+        }
+      })
     }
   }
 

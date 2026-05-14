@@ -45,9 +45,11 @@ export default function(RED) {
           }
         }
         debug('sending put %j', put)
-        server.client.connection.send(put)
-        node.status({fill:'green',shape:"dot",text:`sent value: ${msg.payload}`})
-       
+        server.send(node, put).then((sent) => {
+          if (sent) {
+            node.status({fill:'green',shape:"dot",text:`sent value: ${msg.payload}`})
+          }
+        })
       } catch (err) {
         server.onError(node, err)
       }
