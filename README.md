@@ -4,6 +4,8 @@ Node-RED nodes for reading from and writing to a Signal K server.
 
 This package is intended for external Node-RED installs that connect to Signal K over WebSocket using `@signalk/client`.
 
+This cannoat be used in the embedded node-red that runs in the signalk-server via the signalk-node-red plugin.
+
 ## Install
 
 Search for node-red-contrib-signalk in the node-red Pallete Manager
