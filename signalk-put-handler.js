@@ -33,7 +33,7 @@ export default function(RED) {
       }
     }
 
-    server.client.on('connect', () => {
+    const onConnect = () => {
       const meta = {
           updates: [
             {
@@ -48,8 +48,10 @@ export default function(RED) {
       }
       debug('sending meta for put handler %j', meta)
       server.client.connection.send(meta)
-    })
-    server.client.on('message', msg => {
+    }
+    server.client.on('connect', onConnect)
+
+    const onMessage = msg => {
       if ( msg.put ) {
         msg.put.forEach(pv => {
           if ( pv.path === config.path ) {
@@ -63,6 +65,12 @@ export default function(RED) {
           }
         });
       }
+    }
+    server.client.on('message', onMessage)
+
+    node.on('close', function() {
+      server.client.removeListener('message', onMessage)
+      server.client.removeListener('connect', onConnect)
     })
   }
   
