@@ -41,6 +41,10 @@ export default function (RED) {
       this.error('Error connecting to Signal K server: ' + err.message)
     })
 
+    this.client.on('self', (self) => {
+      this.self = self
+    })
+
     debug('ConfigSignalKClient created with hostname %s and port %d', this.hostname, this.port)
     
     this.on('close', function (done) {
@@ -51,9 +55,26 @@ export default function (RED) {
       done()
     })
 
-    this.on('error', function (err) {
-      console.error('ConfigSignalKClient error:', err)
+    this.client.on('error', function (err) {
+      this.error('ConfigSignalKClient error:', err)
     })
+
+    this.onError = (node, err) => {
+      node.error(err)
+      node.status({fill:"red",shape:"dot",text:err.message})
+    }
+
+    this.send = (node, msg) => {
+      if (this.client && this.client.connection) {
+        this.client.connection.send(msg)
+        return true
+      } else {
+        const msg = 'Not connected to Signal K server'
+        node.error(msg)
+        node.status({fill:"red",shape:"dot",text:msg})
+        return false
+      }
+    }
   }
 
   RED.nodes.registerType('signalk-client', ConfigSignalKClient)

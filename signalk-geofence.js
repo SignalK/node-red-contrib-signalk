@@ -46,7 +46,7 @@ export default function(RED) {
         return
       }
 
-      if ( config.myposition && delta.context === node.self ) {
+      if ( config.myposition && delta.context === server.self ) {
         node.myposition = pos.value
         //debug('updated self position', node.myposition)
         if ( config.context !== 'vessels.self' ) {
@@ -116,15 +116,9 @@ export default function(RED) {
     
     server.client.on('delta', on_delta)
 
-    const onSelf = self => {
-      debug('self updated', self)
-      node.self = self
-    }
-    server.client.on('self', onSelf)
     node.on('close', function() {
       server.client.removeListener('delta', on_delta)
       server.client.removeListener('connect', onConnect)
-      server.client.removeListener('self', onSelf)
     })
 
   }

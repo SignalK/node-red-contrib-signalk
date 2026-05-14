@@ -36,14 +36,18 @@ export default function(RED) {
     }
 
     const on_delta = delta => {
-      let notification = delta.updates[0].values[0]
+      try {
+        let notification = delta.updates[0].values[0]
 
-      debug('received notification', notification)
-      debug('config state', config.state)
+        debug('received notification', notification)
+        debug('config state', config.state)
 
-      if ( config.state === 'any' || (notification.value && notification.value.state == config.state) ) {
-        showStatus()
-        node.send({ payload: notification})
+        if (config.state === 'any' || (notification.value && notification.value.state == config.state)) {
+          showStatus()
+          node.send({ payload: notification })
+        }
+      } catch (err) {
+        server.onError(node, err)
       }
     }
 
@@ -51,16 +55,9 @@ export default function(RED) {
     
     server.client.on('delta', on_delta)
 
-    const onSelf = self => {
-      debug('self updated', self)
-      node.self = self
-    }
-    server.client.on('self', onSelf)
-
     node.on('close', function() {
       server.client.removeListener('delta', on_delta)
       server.client.removeListener('connect', onConnect)
-      server.client.removeListener('self', onSelf)
     })
   }
   

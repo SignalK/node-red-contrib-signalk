@@ -9,12 +9,6 @@ export default function(RED) {
 
     const server = RED.nodes.getNode(config.server)
 
-    function onError(err) {
-      node.error(err)
-      console.error(err.stack)
-      node.status({fill:"red",shape:"dot",text:err.message})
-    }
-
     node.on('input', msg => {
       node.status({fill:"yellow",shape:"dot",text:`sending...`})
       try {
@@ -55,7 +49,7 @@ export default function(RED) {
         node.status({fill:'green',shape:"dot",text:`sent value: ${msg.payload}`})
        
       } catch (err) {
-        onError(err)
+        server.onError(node, err)
       }
     })
   }

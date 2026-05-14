@@ -17,8 +17,9 @@ export default function(RED) {
           "state": "PENDING",
           "statusCode": 202
         }
-        debug('sending put response %j', resp)
-        server.client.connection.send(resp)
+        if ( server.send(node, resp) ) {
+          debug('sending put response %j', resp)
+        }
         return { state: 'PENDING' }
       } else {
         node.send({topic: path, payload: value})
@@ -27,8 +28,9 @@ export default function(RED) {
           "state": "COMPLETED",
           "statusCode": 200
         }
-        debug('sending put response %j', resp)
-        server.client.connection.send(resp)
+        if ( server.send(node, resp) ) {
+          debug('sending put response %j', resp)
+        }
         return { state: 'SUCCESS' }
       }
     }
@@ -46,24 +48,29 @@ export default function(RED) {
             }
         ]
       }
-      debug('sending meta for put handler %j', meta)
-      server.client.connection.send(meta)
+      if ( server.send(node, meta) ) {
+        debug('sending meta for put handler %j', meta)
+      }
     }
     server.client.on('connect', onConnect)
 
     const onMessage = msg => {
       if ( msg.put ) {
-        msg.put.forEach(pv => {
-          if ( pv.path === config.path ) {
-            debug('received put %j', msg)
-            let result = handlePut(config.context, pv.path, pv.value, msg.requestId)
-            if ( result.state === 'PENDING' ) {
-              debug('put handler is pending for path %s with value %j', pv.path, pv.value)
-            } else {
-              debug('put handler is successful for path %s with value %j', pv.path, pv.value)
+        try {
+          msg.put.forEach(pv => {
+            if (pv.path === config.path) {
+              debug('received put %j', msg)
+              let result = handlePut(config.context, pv.path, pv.value, msg.requestId)
+              if (result.state === 'PENDING') {
+                debug('put handler is pending for path %s with value %j', pv.path, pv.value)
+              } else {
+                debug('put handler is successful for path %s with value %j', pv.path, pv.value)
+              }
             }
-          }
-        });
+          });
+        } catch (err) {
+          server.onError(node, err)
+        }
       }
     }
     server.client.on('message', onMessage)

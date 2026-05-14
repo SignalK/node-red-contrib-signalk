@@ -17,8 +17,9 @@ export default function(RED) {
           "statusCode": msg.statusCode || 200,
           message: msg.message
         }
-        debug('sending put success response %j', resp)
-        server.client.connection.send(resp)
+        if ( server.send(node, resp) ) {
+          debug('sending put success response %j', resp)
+        }
       } else {
         node.error('No requestId provided for put response')
       }

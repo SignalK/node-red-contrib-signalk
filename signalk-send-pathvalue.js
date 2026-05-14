@@ -17,58 +17,63 @@ export default function(RED) {
     }
     
     node.on('input', msg => {
-      let path = config.path ? config.path : msg.topic
+      try {
+        const path = config.path ? config.path : msg.topic
 
-      if ( this.server.client.connection === undefined ) {
-        node.error('not connected to Signal K server')
-        return
-      }
+        if (this.server.client.connection === undefined) {
+          node.error('not connected to Signal K server')
+          return
+        }
 
-      if ( !path ) {
-        node.error('no topic or path configured')
-        return
-      }
+        if (!path) {
+          node.error('no topic or path configured')
+          return
+        }
 
-      if ( typeof config.meta !== 'undefined' && config.meta !== "" && !sentMeta[path] ) {
+        if (typeof config.meta !== 'undefined' && config.meta !== "" && !sentMeta[path]) {
+          let delta = {
+            updates: [
+              {
+                meta: [
+                  {
+                    value: JSON.parse(config.meta),
+                    path
+                  }
+                ]
+              }
+            ]
+          }
+          if (config.source && config.source.length > 0) {
+            delta.updates[0].$source = config.source
+          }
+          this.server.client.connection.send(delta)
+          debug('sending meta for path %s with value %j', path, delta)
+          sentMeta[path] = true
+        }
+
         let delta = {
           updates: [
             {
-              meta: [
+              values: [
                 {
-                  value: JSON.parse(config.meta),
+                  value: msg.payload,
                   path
                 }
               ]
             }
           ]
         }
-        if ( config.source && config.source.length > 0 ) {
+        if (config.source && config.source.length > 0) {
           delta.updates[0].$source = config.source
         }
-        this.server.client.connection.send(delta)
-        debug('sending meta for path %s with value %j', path, delta)
-        sentMeta[path] = true
+        let c = path.lastIndexOf('.')
+        debug('sending delta for path %s with value %j', path, delta)
+        if (this.server.send(node, delta)) {
+          showStatus(`${path.substring(c + 1)}: ${msg.payload}`)
+        }
+      } catch (err) {
+        this.server.onError(node, err)
       }
-      
-      let delta = {
-        updates: [
-          {
-            values: [
-              {
-                value: msg.payload,
-                path
-              }
-            ]
-          }
-        ]
-      }
-      if ( config.source && config.source.length > 0 ) {
-        delta.updates[0].$source = config.source
-      }
-      let c = path.lastIndexOf('.')
-      showStatus(`${path.substring(c+1)}: ${msg.payload}`)
-      debug('sending delta for path %s with value %j', path, delta)
-      this.server.client.connection.send(delta)
     })
   }
   RED.nodes.registerType("signalk-send-pathvalue", signalKSendPathValue);
