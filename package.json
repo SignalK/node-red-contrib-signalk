@@ -19,14 +19,13 @@
   "node-red": {
     "nodes": {
       "signalk-subscribe": "signalk-subscribe.js",
-      "signalk-notification-": "signalk-notification.js",
+      "signalk-notification": "signalk-notification.js",
       "signalk-flatten-delta": "signalk-flatten-delta.js",
       "signalk-send-pathvalue": "signalk-send-pathvalue.js",
       "signalk-send-delta": "signalk-send-delta.js",
       "signalk-send-notification": "signalk-send-notification.js",
       "signalk-send-put": "signalk-send-put.js",
       "signalk-geofence": "signalk-geofence.js",
-      "signalk-geofence-switch": "signalk-geofence-switch.js",
       "signalk-delay": "signalk-delay.js",
       "signalk-put-handler": "signalk-put-handler.js",
       "signalk-put-error": "signalk-put-error.js",

@@ -1,5 +1,5 @@
 
-module.exports = function(RED) {
+export default function(RED) {
   function signalK(config) {
     RED.nodes.createNode(this,config);
     var node = this;
