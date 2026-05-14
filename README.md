@@ -6,11 +6,7 @@ This package is intended for external Node-RED installs that connect to Signal K
 
 ## Install
 
-```bash
-npm install @signalk/node-red-contrib-signalk
-```
-
-Restart Node-RED after installing.
+Search for node-red-contrib-signalk in the node-red Pallete Manager
 
 ## Signal K Client Config Node
 
