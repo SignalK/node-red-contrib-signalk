@@ -1,0 +1,66 @@
+<script type="text/javascript">
+    RED.nodes.registerType('signalk-subscribe',{
+        category: 'Signal K',
+        color: '#ffcc01',
+        defaults: {
+          name: {value:""},
+          mode: {value:"sendAll"},
+          flatten: {value: true},
+          context: {value:"vessels.self"},
+          path: {value:""},
+          source: {value: ""},
+          period: {value: 1000},
+          server: {value:"", type:"signalk-client"},
+        },
+        inputs:0,
+        outputs:1,
+        icon: "bridge.png",
+        label: function() {
+            return this.name||"signalk-subscribe";
+        },
+        paletteLabel: 'subscribe'
+    });
+</script>
+
+<script type="text/x-red" data-template-name="signalk-subscribe">
+  <div class="form-row">
+        <label for="node-input-server"><i class="icon-tag"></i> Server</label>
+        <input type="text" id="node-input-server" placeholder="Server">
+  </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+  <label for="node-input-mode"><i class="icon-tag"></i> Mode</label>
+  <select id="node-input-mode" placeholder="Mode">
+    <option value="sendAll">send all messages</option>
+    <option value="sendChanges">send when value changes</option>
+    <option value="sendChangesIgnore">send when value changes (ignoring initial value)</option>
+  </select>
+  </div>
+  <div class="form-row">
+        <label for="node-input-flatten"><i class="icon-tag"></i> Flatten</label>
+        <input type="checkbox" id="node-input-flatten" placeholder="Flatten">
+  </div>
+  <div class="form-row">
+        <label for="node-input-context"><i class="icon-tag"></i> Context</label>
+        <input type="text" id="node-input-context" placeholder="Context">
+  </div>
+  <div class="form-row">
+        <label for="node-input-path"><i class="icon-tag"></i> Path</label>
+        <input type="text" id="node-input-path" placeholder="Path">
+  </div>
+  <div class="form-row">
+        <label for="node-input-source"><i class="icon-tag"></i> $Source</label>
+        <input type="text" id="node-input-source" placeholder="$Source">
+  </div>
+  <div class="form-row">
+  <label for="node-input-period"><i class="icon-tag"></i> Period (ms)</label>
+        <input type="text" id="node-input-period" placeholder="Period">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="signalk-subscribe">
+    <p>Input that sends messages for every delta from the given path</p>
+</script>

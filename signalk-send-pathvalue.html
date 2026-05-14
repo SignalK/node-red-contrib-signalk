@@ -1,0 +1,62 @@
+<script type="text/javascript">
+  RED.nodes.registerType('signalk-send-pathvalue',{
+    category: 'Signal K',
+    color: '#ffcc01',
+    defaults: {
+      name: {value:""},
+      path: {value:""},
+      source: {value: ""},
+      meta: {value:"", required:false},
+      server: {value:"", type:"signalk-client"},
+    },
+    inputs:1,
+    outputs:0,
+    icon: "bridge.png",
+    align: 'right',
+    label: function() {
+      return this.name||"signalk-send-pathvalue";
+    },
+    paletteLabel: 'send pathvalue',
+    oneditprepare: () => {
+      $("#node-input-meta").typedInput({
+        type:"json",
+        types:["json"]
+      })
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="signalk-send-pathvalue">
+  <div class="form-row">
+        <label for="node-input-server"><i class="icon-tag"></i> Server</label>
+        <input type="text" id="node-input-server" placeholder="Server">
+  </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+        <label for="node-input-path"><i class="icon-tag"></i> Path</label>
+        <input type="text" id="node-input-path" placeholder="Path">
+  </div>
+  <div class="form-row">
+        <label for="node-input-source"><i class="icon-tag"></i> $source</label>
+        <input type="text" id="node-input-source" placeholder="$source">
+  </div>
+  <div class="form-row">
+        <label for="node-input-meta"><i class="icon-tag"></i> Meta</label>
+        <input type="text" id="node-input-meta" placeholder='{"units": "V"}'>
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="signalk-send-pathvalue">
+
+  <p>Output that sends a delta through the server. Input should be topic and payload</p>
+
+<pre><code class="javascript">  
+{
+  "topic":"navigation.speedOverGround",
+  "payload":20.45
+}
+</code></pre>
+</script>

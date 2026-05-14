@@ -1,0 +1,42 @@
+{
+  "name": "@signalk/node-red-contrib-signalk",
+  "version": "1.0.0",
+  "description": "Node red nodes for use with external node-red installs",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Scott Bender",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SignalK/node-red-contrib-signalk"
+  },
+  "keywords": [
+    "node-red"
+  ],
+  "node-red": {
+    "nodes": {
+      "signalk-subscribe": "signalk-subscribe.js",
+      "signalk-notification-": "signalk-notification.js",
+      "signalk-flatten-delta": "signalk-flatten-delta.js",
+      "signalk-send-pathvalue": "signalk-send-pathvalue.js",
+      "signalk-send-delta": "signalk-send-delta.js",
+      "signalk-send-notification": "signalk-send-notification.js",
+      "signalk-send-put": "signalk-send-put.js",
+      "signalk-geofence": "signalk-geofence.js",
+      "signalk-geofence-switch": "signalk-geofence-switch.js",
+      "signalk-delay": "signalk-delay.js",
+      "signalk-put-handler": "signalk-put-handler.js",
+      "signalk-put-error": "signalk-put-error.js",
+      "signalk-put-success": "signalk-put-success.js",
+      "config-client": "config-client.js"
+    }
+  },
+  "dependencies": {
+    "@signalk/client": "^2.4.0",
+    "geodist": "^0.2.1",
+    "uuid": "^14.0.0"
+  }
+}

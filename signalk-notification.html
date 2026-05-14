@@ -1,0 +1,64 @@
+<script type="text/javascript">
+  RED.nodes.registerType('signalk-notification',{
+    category: 'Signal K',
+    color: '#ffcc01',
+    defaults: {
+      name: {value:""},
+      notification: {value: ""},
+      state: {value:"alarm"},
+      server: {value:"", type:"signalk-client"}
+    },
+    inputs:0,
+    outputs:1,
+    icon: "bridge.png",
+    label: function() {
+      return this.name||"signalk-notification";
+    },
+    paletteLabel: 'notification'
+  });
+</script>
+
+<script type="text/x-red" data-template-name="signalk-notification">
+  <div class="form-row">
+        <label for="node-input-server"><i class="icon-tag"></i> Server</label>
+        <input type="text" id="node-input-server" placeholder="Server">
+  </div>
+  <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+        <label for="node-input-notification"><i class="icon-tag"></i> Notification Path</label>
+        <input type="text" id="node-input-notification" placeholder="Notification Path">
+  </div>
+  <div class="form-row">
+  <label for="node-input-state"><i class="icon-tag"></i> State</label>
+  <select id="node-input-state" placeholder="State">
+    <option value="any">Any</option>
+    <option value="normal">Normal</option>
+    <option value="alert">Alert</option>
+    <option value="warn">Warn</option>
+    <option value="alarm">Alarm</option>
+   <option value="emergency">Emergency</option>
+  </select>
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="signalk-notification">
+<p>Input that sends a message when a notification is received. Configuration allows messages for a specific notification or any notification. The notification state can also be specified. Payload will be the notification path and value.</p>
+
+<pre><code class="javascript">
+{
+  "path: "notifications.anchorAlarm",
+  "value" : {
+    "state" : "emergency",
+    "method" : [
+      "visual",
+      "sound"
+    ],
+    "timestamp" : "2018-06-15T15:01:55.007Z",
+    "message" : "Anchor Alarm - Emergency"
+  }
+}
+</code></pre>
+</script>
