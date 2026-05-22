@@ -38,8 +38,11 @@ export default function (RED) {
     })
 
     this.client.on('connect', () => {
-      debug('authenticating...')
-      this.client.authenticate(config.username, config.password)
+      if ( config.username && config.password ) {
+        debug('authenticating...')
+        this.client.authenticate(config.username, config.password)
+      }
+      this.client.emit('authenticated')
     })
 
     this.client.on('self', (self) => {
@@ -85,7 +88,69 @@ export default function (RED) {
         }
       })
     }
+
+    this.registerPutHandler = (node, path, handler) => {
+      if ( !this.putHandlers ) {
+        this.putHandlers = []
+        const onMessage = msg => {
+          if ( msg.put ) {
+            try {
+              msg.put.forEach(pv => {
+                const handler = this.putHandlers.find(h => h.path === pv.path)
+                if (handler) {
+                  debug('received put %j', msg)
+                  let result = handler.func(config.context, pv.path, pv.value, msg.requestId)
+  //                const resp = { requestId: msg.requestId, ...result }
+                  result.requestId = msg.requestId
+                  debug('sending response %j %j', result, msg.requestId)
+                  this.send(handler.node, result)
+                }
+              });
+            } catch (err) {
+              this.error(err)
+            }
+          }
+        }
+        this.client.on('message', onMessage)
+      }
+      this.putHandlers.push({ path, func: handler, node})
+    }
+
+    this.unRegisterPutHandler = (node, path) => {
+      if ( this.putHandlers ) {
+        this.putHandlers = this.putHandlers.filter(h => h.path !== path || h.node !== node)
+      }
+    }
+
+    this.handleMessage = (node, delta) => {
+      this.send(node, delta)
+    }
   }
 
   RED.nodes.registerType('signalk-client', ConfigSignalKClient)
 }
+
+
+/*
+
+    let hasClient = false
+    RED.nodes.eachConfig(function (n) {
+      if (n.id === 'sk-embeded-id')
+        hasClient = true
+    });
+
+    console.log('has client?', RED.nodes.getNode('sk-embeded-id'))
+    if (!hasClient) {
+      var clientNode = {
+        id: "sk-embeded-id",
+        _def: RED.nodes.getType("signalk-client"),
+        type: "signalk-client",
+        valid: true,
+        isEmbedded: true
+      };
+      RED.nodes.add(clientNode);
+      RED.nodes.dirty(true);
+    }
+
+
+*/

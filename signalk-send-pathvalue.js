@@ -70,7 +70,7 @@ export default function(RED) {
           delta.updates[0].$source = config.source
         }
         let c = path.lastIndexOf('.')
-        debug('sending delta for path %s with value %j', path, delta)
+        //debug('sending delta for path %s with value %j', path, delta)
         this.server.send(node, delta).then((sent) => {
           if (sent) {
             showStatus(`${path.substring(c + 1)}: ${msg.payload}`)
