@@ -12,30 +12,16 @@ export default function(RED) {
     function handlePut(context, path, value, requestId) {
       if ( config.pending ) {
         node.send({topic: path, payload: value, requestId})
-        const resp = {
-          requestId: requestId,
+        return {
           "state": "PENDING",
           "statusCode": 202
         }
-        server.send(node, resp).then((sent) => {
-          if (sent) {
-            debug('sending put response %j', resp)
-          }
-        })
-        return { state: 'PENDING' }
       } else {
         node.send({topic: path, payload: value})
-        const resp = {
-          requestId: requestId,
+        return {
           "state": "COMPLETED",
           "statusCode": 200
         }
-        server.send(node, resp).then((sent) => {
-          if (sent) {
-            debug('sending put response %j', resp)
-          }
-        })
-        return { state: 'SUCCESS' }
       }
     }
 
@@ -60,29 +46,10 @@ export default function(RED) {
     }
     server.client.on('connect', onConnect)
 
-    const onMessage = msg => {
-      if ( msg.put ) {
-        try {
-          msg.put.forEach(pv => {
-            if (pv.path === config.path) {
-              debug('received put %j', msg)
-              let result = handlePut(config.context, pv.path, pv.value, msg.requestId)
-              if (result.state === 'PENDING') {
-                debug('put handler is pending for path %s with value %j', pv.path, pv.value)
-              } else {
-                debug('put handler is successful for path %s with value %j', pv.path, pv.value)
-              }
-            }
-          });
-        } catch (err) {
-          server.onError(node, err)
-        }
-      }
-    }
-    server.client.on('message', onMessage)
-
+    server.registerPutHandler(node, config.path, handlePut)
+    
     node.on('close', function() {
-      server.client.removeListener('message', onMessage)
+      server.unRegisterPutHandler(node, config.path)
       server.client.removeListener('connect', onConnect)
     })
   }

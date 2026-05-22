@@ -30,7 +30,11 @@
       "signalk-put-handler": "signalk-put-handler.js",
       "signalk-put-error": "signalk-put-error.js",
       "signalk-put-success": "signalk-put-success.js",
-      "config-client": "config-client.js"
+      "config-client": "config-client.js",
+      "signalk-toggle-switch": "signalk-toggle-switch.js",
+      "signalk-multi-switch": "signalk-multi-switch.js",
+      "signalk-dimmer-switch": "signalk-dimmer-switch.js",
+      "signalk-slider-switch": "signalk-slider-switch.js"
     }
   },
   "dependencies": {
