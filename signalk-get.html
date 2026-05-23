@@ -3,6 +3,7 @@
     category: 'Signal K',
     color: '#ffcc01',
     defaults: {
+      server: {value:"", type:"signalk-client", required: true},
       name: {value:""},
       path: {value:""},
     },
@@ -20,6 +21,10 @@
 
 <script type="text/x-red" data-template-name="signalk-get">
   <div class="form-row">
+        <label for="node-input-server"><i class="icon-tag"></i> Server</label>
+        <input type="text" id="node-input-server" placeholder="Server">
+  </div>
+  <div class="form-row">
     <label for="node-input-name"><i class="icon-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
@@ -30,5 +35,5 @@
 </script>
 
 <script type="text/x-red" data-help-name="signalk-get">
-  <p>Output that retrieves a SignalK value via `app.getSelfPath`. Input should be the path to get. The topic will be used as the path if none is entered.</p>
+  <p>Output that retrieves a SignalK value. Input should be the path to get. The topic will be used as the path if none is entered.</p>
 </script>

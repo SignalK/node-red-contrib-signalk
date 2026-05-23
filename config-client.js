@@ -121,6 +121,11 @@ export default function (RED) {
           return Promise.resolve(false)
         }
       }
+
+      this.getSelfPath = (path) => {
+        return Promise.resolve(app.getSelfPath(path))
+      }
+
     } else {
 
       this.hostname = config.hostname
@@ -321,6 +326,19 @@ export default function (RED) {
         } else {
           return Promise.resolve(false)
         }
+      }
+
+      this.getSelfPath = (path) => {
+        return new Promise((resolve, reject) => {
+          this.client
+            .API() // create REST API client
+            .then((api) => api.get('/vessels/self/' + path))
+            .then(resolve)
+            .catch(err => {
+              debug(err)
+              resolve(null)
+            })
+        })
       }
     }
   }

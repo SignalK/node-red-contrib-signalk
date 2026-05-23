@@ -36,7 +36,14 @@
       "signalk-multi-switch": "signalk-multi-switch.js",
       "signalk-dimmer-switch": "signalk-dimmer-switch.js",
       "signalk-slider-switch": "signalk-slider-switch.js",
-      "signalk-app-event": "signalk-app-event.js"
+      "signalk-app-event": "signalk-app-event.js",
+      "signalk-filter-delta": "signalk-filter-delta.js",
+      "signalk-get": "signalk-get.js",
+      "signalk-input-handler": "signalk-input-handler.js",
+      "signalk-input-handler-next": "signalk-input-handler-next.js",
+      "signalk-on-delta": "signalk-on-delta.js",
+      "signalk-send-nmea0183": "signalk-send-nmea0183.js",
+      "signalk-send-nmea2000": "signalk-send-nmea2000.js"
     }
   },
   "dependencies": {

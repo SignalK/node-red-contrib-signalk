@@ -1,10 +1,14 @@
 
-module.exports = function(RED) {
+export default function(RED) {
   function signalKGet(config) {
     RED.nodes.createNode(this,config)
     var node = this
 
-    var app = node.context().global.get('app')
+    const server = RED.nodes.getNode(config.server)
+    if (!server) {
+      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
+      return
+    }
 
     function onError(err) {
       node.error(err)
@@ -14,19 +18,21 @@ module.exports = function(RED) {
 
     node.on('input', msg => {
       node.status({fill:"yellow",shape:"dot",text:`sending...`})
-      try {
-        const path = config.path && config.path.length > 0 ? config.path : msg.topic
-        let res = app.getSelfPath(path) 
-        if ( res && res.value !== null && res.value !== undefined ) {
-          node.status({fill:'green',shape:"dot",text:`value: ${res.value}`})
-          node.send([{ payload: res.value }, null])
-        } else {
-          node.status({fill:'red',shape:"dot",text:`not found`})
-          node.send([null, { payload: `not found` }])
-        }
-      } catch (err) {
-        onError(err)
-      }
+      const path = config.path && config.path.length > 0 ? config.path : msg.topic
+      server.getSelfPath(path)
+        .then(res => {
+          if (res && res.value !== null && res.value !== undefined) {
+            node.status({ fill: 'green', shape: "dot", text: `value: ${res.value}` })
+            node.send([{ payload: res.value }, null])
+          } else {
+            node.status({ fill: 'red', shape: "dot", text: `not found` })
+            node.send([null, { payload: `not found` }])
+          }
+        })
+        .catch(err => {
+          onError(err)
+        })
+
     })
   }
   RED.nodes.registerType("signalk-get", signalKGet)
