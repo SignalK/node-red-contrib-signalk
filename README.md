@@ -2,8 +2,6 @@
 
 Node-RED nodes for reading from and writing to a Signal K server.
 
-The package is primarily aimed at external Node-RED installations that connect to Signal K over WebSocket using `@signalk/client`. It also ships a small set of nodes that only work inside the embedded Node-RED runtime provided by `signalk-node-red`.
-
 ## Install
 
 Install from the Node-RED palette manager by searching for `@signalk/node-red-contrib-signalk`, or install directly in your Node-RED user directory:
@@ -18,8 +16,8 @@ Restart Node-RED after installation.
 
 There are two ways to use these nodes:
 
-- External Node-RED: connect to a Signal K server with the `signalk-client` config node.
-- Embedded Node-RED: run inside `signalk-server` with `signalk-node-red`, where a few nodes talk directly to the server internals.
+- External Node-RED: connect to a Signal K server using WebSockets and HTTP with the `signalk-client` config node.
+- Embedded Node-RED: run inside `signalk-server` with the `signalk-node-red` plugin, where a few nodes talk directly to the server internals.
 
 Most nodes work with the `signalk-client` config node. The following nodes are embedded-only and will show an error status in a normal external Node-RED instance:
 
