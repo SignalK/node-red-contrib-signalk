@@ -35,7 +35,8 @@
       "signalk-toggle-switch": "signalk-toggle-switch.js",
       "signalk-multi-switch": "signalk-multi-switch.js",
       "signalk-dimmer-switch": "signalk-dimmer-switch.js",
-      "signalk-slider-switch": "signalk-slider-switch.js"
+      "signalk-slider-switch": "signalk-slider-switch.js",
+      "signalk-app-event": "signalk-app-event.js"
     }
   },
   "dependencies": {
