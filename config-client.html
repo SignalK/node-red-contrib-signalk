@@ -40,7 +40,23 @@
 
     const embeddedClientId = 'sk-embeded-id'
 
+    function isEmbeddedSignalKEditor () {
+        const nodeRoot = RED.settings && typeof RED.settings.httpNodeRoot === 'string' ? RED.settings.httpNodeRoot : ''
+        if (nodeRoot === '/redApi' || nodeRoot.indexOf('/plugins/signalk-node-red/redApi') === 0) {
+            return true
+        }
+
+        const path = typeof window !== 'undefined' && window.location && typeof window.location.pathname === 'string'
+            ? window.location.pathname
+            : ''
+        return path.indexOf('/plugins/signalk-node-red/') !== -1 || path.indexOf('/redAdmin') === 0
+    }
+
     function ensureEmbeddedSignalKClient () {
+        if (!isEmbeddedSignalKEditor()) {
+            return
+        }
+
         let hasClient = false
 
         RED.nodes.eachConfig(function (n) {
@@ -62,15 +78,33 @@
             id: embeddedClientId,
             _def: clientType,
             type: 'signalk-client',
+            users: [],
             valid: true,
             isEmbedded: true
         })
         RED.nodes.dirty(true)
     }
 
+    function assignEmbeddedClientIfMissing (node) {
+        if (!node || node.server) {
+            return false
+        }
+
+        const defaults = node._def && node._def.defaults
+        if (!defaults || !Object.prototype.hasOwnProperty.call(defaults, 'server')) {
+            return false
+        }
+
+        node.server = embeddedClientId
+        return true
+    }
+
     RED.events.on('nodes:add', function (node) {
         if (node && typeof node.type === 'string' && node.type.startsWith('signalk-') && node.type !== 'signalk-client') {
             ensureEmbeddedSignalKClient()
+            if (assignEmbeddedClientIfMissing(node)) {
+                RED.nodes.dirty(true)
+            }
         }
     })
 

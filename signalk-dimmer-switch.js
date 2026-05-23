@@ -163,24 +163,27 @@ export default function(RED) {
       })
     }
 
-    publishMeta(dimmingPath, config.displayName, 'ratio')
-    if (includeState) {
-      publishMeta(statePath, config.displayName)
-    }
-
-    globalContext.get(dimmingPath, storeName, (err, dimmingLevel) => {
-      const initialDimming = dimmingLevel !== undefined ? dimmingLevel : 0
-      globalContext.set(dimmingPath, initialDimming, storeName)
-      sendValue(dimmingPath, initialDimming)
-
+    const onAvailable = () => {
+      publishMeta(dimmingPath, config.displayName, 'ratio')
       if (includeState) {
-        globalContext.get(statePath, storeName, (stateErr, state) => {
-          const initialState = state !== undefined ? state : initialDimming > 0
-          globalContext.set(statePath, initialState, storeName)
-          sendValue(statePath, initialState)
-        })
-      } 
-    })
+        publishMeta(statePath, config.displayName)
+      }
+
+      globalContext.get(dimmingPath, storeName, (err, dimmingLevel) => {
+        const initialDimming = dimmingLevel !== undefined ? dimmingLevel : 0
+        globalContext.set(dimmingPath, initialDimming, storeName)
+        sendValue(dimmingPath, initialDimming)
+
+        if (includeState) {
+          globalContext.get(statePath, storeName, (stateErr, state) => {
+            const initialState = state !== undefined ? state : initialDimming > 0
+            globalContext.set(statePath, initialState, storeName)
+            sendValue(statePath, initialState)
+          })
+        }
+      })
+    }
+    server.on('available', onAvailable)
 
     const resendInterval = setInterval(() => {
       globalContext.get(dimmingPath, storeName, (err, dimmingLevel) => {
@@ -243,6 +246,7 @@ export default function(RED) {
 
     node.on('close', function() {
       clearInterval(resendInterval)
+      server.removeListener('available', onAvailable)
       server.unRegisterPutHandler(node, dimmingPath)
       if (includeState) {
         server.unRegisterPutHandler(node, statePath)

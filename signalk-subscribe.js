@@ -14,14 +14,6 @@ export default function(RED) {
 
     const server = RED.nodes.getNode(config.server)
 
-    let subscription = {
-      "context": config.context,
-      subscribe: [{
-        path: config.path,
-        period: config.period
-      }]
-    }
-
     let showingStatus = false
     function showStatus(value, title) {
       if ( ! showingStatus ) {
@@ -49,7 +41,6 @@ export default function(RED) {
             copy.updates = []
             delta.updates.forEach(update => {
               if (update.values && update.values.length > 0 &&
-                update.values[0].path === config.path &&
                 (!config.source || update.$source == config.source)) {
 
                 let last = node.context()[update.values[0].path]
@@ -120,19 +111,19 @@ export default function(RED) {
       }
     }
 
-    const onConnect = () => {
-      debug('connected, subscribing with', subscription)
-      server.client.subscribe(subscription)
+    const onStop = []
+
+    const onAvailable = () => {
+      server.subscribe(config.context, config.path, config.period, onStop, on_delta)
     }
-    server.client.on('connect', onConnect)
+
+    server.on('available', onAvailable)
     
-    server.client.on('delta', on_delta)
-
     node.on('close', function() {
-      server.client.removeListener('delta', on_delta)
-      server.client.removeListener('connect', onConnect)
+      server.removeListener('available', onAvailable)
+      onStop.forEach(f => f());
+      onStop = []
     })
-
   }
 
   RED.nodes.registerType("signalk-subscribe", input);

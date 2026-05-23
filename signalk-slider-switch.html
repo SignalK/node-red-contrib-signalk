@@ -10,7 +10,7 @@
           rangeMin: {value:0, required:true, validate: RED.validators.number()},
           rangeMax: {value:100, required:true, validate: RED.validators.number()},
           stepSize: {value:"", validate: RED.validators.number(true)},
-          server: {value:"", type:"signalk-client"},
+          server: {value:"", type:"signalk-client", required: false},
         },
         inputs:1,
         outputs:1,

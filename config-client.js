@@ -9,121 +9,188 @@ export default function (RED) {
   function ConfigSignalKClient (config) {
     RED.nodes.createNode(this, config)
 
-    this.hostname = config.hostname
-    this.port = config.port
+    const originalOn = this.on.bind(this)
+    const originalRemoveListener = this.removeListener.bind(this)
 
-    const debug = coreDebug(`node-red-contrib-signalk:config-client-${this.hostname}:${this.port}`)
+    if ( config.isEmbedded ) {
+      const app = this.context().global.get('app')
+      const smanager = this.context().global.get('subscriptionmanager')
 
-    this.client = new Client({
-      hostname: this.hostname,
-      port: this.port,
-      deltaStreamBehaviour: 'none',
-      wsKeepaliveInterval: 10,
-      reconnect: true,
-      rejectUnauthorized: false,
-      username: config.username,
-      password: config.password,
-      useTLS: config.useTLS,
-      autoConnect: false,
-      notifications: false
-    })
-
-    this.client.connect()
-    .then(() => {
-      debug('connected to server, self', this.client.self)
-    })
-    .catch(err => {
-      debug('connection error:', err)
-      this.error('Error connecting to Signal K server: ' + err.message)
-    })
-
-    this.client.on('connect', () => {
-      if ( config.username && config.password ) {
-        debug('authenticating...')
-        this.client.authenticate(config.username, config.password)
+      this.self = app.selfId
+      
+      this.onError = (node, err) => {
+        node.error(err)
+        node.status({ fill: "red", shape: "dot", text: err.message })
       }
-      this.client.emit('authenticated')
-    })
 
-    this.client.on('self', (self) => {
-      this.self = self
-    })
-
-    debug('created with hostname %s and port %d', this.hostname, this.port)
-    
-    this.on('close', (done) => {
-      debug('closing connection')
-      if (this.client) {
-        this.client.close()
+      this.handleMessage = (node, delta, source) => {
+        app.handleMessage(source || 'signalk-node-red', delta)
       }
-      done()
-    })
 
-    this.client.on('error', (err) => {
-      this.error('error: ' + JSON.stringify(err))
-    })
-
-    this.onError = (node, err) => {
-      node.error(err)
-      node.status({fill:"red",shape:"dot",text:err.message})
-    }
-
-    this.send = (node, msg) => {
-      return new Promise((resolve, reject) => {
-        if (this.client && this.client.connection) {
-          this.client.connection.send(msg)
-            .then(() => {
-              resolve(true)
-            })
-            .catch(err => {
-              node.error('error sending message: ' + JSON.stringify(err))
-              node.status({ fill: "red", shape: "dot", text: 'error sending message' })
-              resolve(false)
-            })
+      this.on = (event, handler) => {
+        if (event === 'available') {
+          handler()
         } else {
-          const msg = 'Not connected to Signal K server'
-          node.error(msg)
-          node.status({ fill: "red", shape: "dot", text: msg })
-          resolve(false)
+          originalOn(event, handler)
         }
-      })
-    }
+      }
 
-    this.registerPutHandler = (node, path, handler) => {
-      if ( !this.putHandlers ) {
-        this.putHandlers = []
-        const onMessage = msg => {
-          if ( msg.put ) {
-            try {
-              msg.put.forEach(pv => {
-                const handler = this.putHandlers.find(h => h.path === pv.path)
-                if (handler) {
-                  debug('received put %j', msg)
-                  let result = handler.func(config.context, pv.path, pv.value, msg.requestId)
-  //                const resp = { requestId: msg.requestId, ...result }
-                  result.requestId = msg.requestId
-                  debug('sending response %j %j', result, msg.requestId)
-                  this.send(handler.node, result)
-                }
-              });
-            } catch (err) {
-              this.error(err)
+      this.removeListener = (event, handler) => {
+        if (event !== 'available') {
+          originalRemoveListener(event, handler)
+        }
+      }
+
+      this.registerPutHandler = (node, path, handler) => {
+        app.registerPutHandler('vessels.self', path, (context, path, value, cb) => {
+          return handler(context, path, value, cb)
+        })
+      }
+
+      this.unRegisterPutHandler = (node, path) => {
+      }
+
+      this.subscribe = (context, path, period, onStop, cb) => {
+        let subscription = {
+          context: context,
+          subscribe: [{
+            path: path,
+            period: period
+          }]
+        }
+
+        smanager.subscribe(subscription, 
+          onStop, 
+          (err) => {
+            if (err) {
+              node.error(err)
+            }
+          },
+          cb
+        );
+      }
+    } else {
+
+      this.hostname = config.hostname
+      this.port = config.port
+
+      const debug = coreDebug(`node-red-contrib-signalk:config-client-${this.hostname}:${this.port}`)
+
+      this.client = new Client({
+        hostname: this.hostname,
+        port: this.port,
+        deltaStreamBehaviour: 'none',
+        wsKeepaliveInterval: 10,
+        reconnect: true,
+        rejectUnauthorized: false,
+        username: config.username,
+        password: config.password,
+        useTLS: config.useTLS,
+        autoConnect: false,
+        notifications: false
+      })
+
+      this.client.connect()
+        .then(() => {
+          debug('connected to server, self', this.client.self)
+        })
+        .catch(err => {
+          debug('connection error:', err)
+          this.error('Error connecting to Signal K server: ' + err.message)
+        })
+
+      this.client.on('connect', () => {
+        if (config.username && config.password) {
+          debug('authenticating...')
+          this.client.authenticate(config.username, config.password)
+        }
+        this.available = true
+        this.emit('available')
+      })
+
+      this.client.on('self', (self) => {
+        this.self = self
+      })
+
+      debug('created with hostname %s and port %d', this.hostname, this.port)
+
+      this.on('close', (done) => {
+        debug('closing connection')
+        if (this.client) {
+          this.client.close()
+        }
+        done()
+      })
+
+      this.client.on('error', (err) => {
+        this.error('error: ' + JSON.stringify(err))
+      })
+
+      this.send = (node, msg) => {
+        return new Promise((resolve, reject) => {
+          if (this.client && this.client.connection) {
+            this.client.connection.send(msg)
+              .then(() => {
+                resolve(true)
+              })
+              .catch(err => {
+                node.error('error sending message: ' + err)
+                node.status({ fill: "red", shape: "dot", text: 'error sending message' })
+                resolve(false)
+              })
+          } else {
+            const msg = 'Not connected to Signal K server'
+            node.error(msg)
+            node.status({ fill: "red", shape: "dot", text: msg })
+            resolve(false)
+          }
+        })
+      }
+
+      this.registerPutHandler = (node, path, handler) => {
+        if (!this.putHandlers) {
+          this.putHandlers = []
+          const onMessage = msg => {
+            if (msg.put) {
+              try {
+                msg.put.forEach(pv => {
+                  const handler = this.putHandlers.find(h => h.path === pv.path)
+                  if (handler) {
+                    debug('received put %j', msg)
+                    let result = handler.func(config.context, pv.path, pv.value, msg.requestId)
+                    //                const resp = { requestId: msg.requestId, ...result }
+                    result.requestId = msg.requestId
+                    debug('sending response %j %j', result, msg.requestId)
+                    this.send(handler.node, result)
+                  }
+                });
+              } catch (err) {
+                this.error(err)
+              }
             }
           }
+          this.client.on('message', onMessage)
         }
-        this.client.on('message', onMessage)
+        this.putHandlers.push({ path, func: handler, node })
       }
-      this.putHandlers.push({ path, func: handler, node})
-    }
 
-    this.unRegisterPutHandler = (node, path) => {
-      if ( this.putHandlers ) {
-        this.putHandlers = this.putHandlers.filter(h => h.path !== path || h.node !== node)
+      this.unRegisterPutHandler = (node, path) => {
+        if (this.putHandlers) {
+          this.putHandlers = this.putHandlers.filter(h => h.path !== path || h.node !== node)
+        }
       }
-    }
 
-    this.handleMessage = (node, delta) => {
-      this.send(node, delta)
+      this.handleMessage = (node, delta, source) => {
+        delta['$source'] = source || 'signalk-node-red'
+        this.send(node, delta)
+      }
+
+      this.on = (event, handler) => {
+        if (event === 'available' && this.available) {
+          handler()
+        }
+        originalOn(event, handler)
+      }
     }
   }
 
