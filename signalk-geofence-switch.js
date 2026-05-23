@@ -7,6 +7,11 @@ export default function(RED) {
     RED.nodes.createNode(this,config)
     const node = this
     const server = RED.nodes.getNode(config.server)
+
+    if (!server) {
+      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
+      return
+    }
     const context = node.context()
 
     let currentPosition

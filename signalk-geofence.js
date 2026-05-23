@@ -10,6 +10,11 @@ export default function(RED) {
 
     const server = RED.nodes.getNode(config.server)
 
+    if (!server) {
+      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
+      return
+    }
+
     const context = node.context()
 
     node.on('input', msg => {

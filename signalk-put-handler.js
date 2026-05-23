@@ -9,6 +9,11 @@ export default function(RED) {
 
     const server = RED.nodes.getNode(config.server)
 
+    if (!server) {
+      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
+      return
+    }
+
     function handlePut(context, path, value, cbInfo) {
       if ( config.pending ) {
         node.send({topic: path, payload: value, cbInfo})

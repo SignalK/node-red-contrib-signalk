@@ -19,6 +19,11 @@ export default function(RED) {
     }
 
     const server = RED.nodes.getNode(config.server)
+
+    if (!server) {
+      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
+      return
+    }
     const globalContext = node.context().global
 
     if ( config.options.length === 0 ) {

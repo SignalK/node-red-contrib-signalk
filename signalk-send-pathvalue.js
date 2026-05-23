@@ -12,6 +12,11 @@ export default function(RED) {
 
     this.server = RED.nodes.getNode(config.server)
 
+    if (!this.server) {
+      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
+      return
+    }
+
     function showStatus(text) {
       node.status({fill:"green",shape:"dot",text:text});
     }

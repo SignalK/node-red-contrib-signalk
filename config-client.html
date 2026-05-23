@@ -90,11 +90,6 @@
             return false
         }
 
-        const defaults = node._def && node._def.defaults
-        if (!defaults || !Object.prototype.hasOwnProperty.call(defaults, 'server')) {
-            return false
-        }
-
         node.server = embeddedClientId
         return true
     }
