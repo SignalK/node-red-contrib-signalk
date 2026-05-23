@@ -2,19 +2,39 @@
 
 Node-RED nodes for reading from and writing to a Signal K server.
 
-This package is intended for external Node-RED installs that connect to Signal K over WebSocket using `@signalk/client`.
-
-This cannoat be used in the embedded node-red that runs in the signalk-server via the signalk-node-red plugin.
+The package is primarily aimed at external Node-RED installations that connect to Signal K over WebSocket using `@signalk/client`. It also ships a small set of nodes that only work inside the embedded Node-RED runtime provided by `signalk-node-red`.
 
 ## Install
 
-Search for node-red-contrib-signalk in the node-red Pallete Manager
+Install from the Node-RED palette manager by searching for `@signalk/node-red-contrib-signalk`, or install directly in your Node-RED user directory:
+
+```sh
+npm install @signalk/node-red-contrib-signalk
+```
+
+Restart Node-RED after installation.
+
+## Runtime Modes
+
+There are two ways to use these nodes:
+
+- External Node-RED: connect to a Signal K server with the `signalk-client` config node.
+- Embedded Node-RED: run inside `signalk-server` with `signalk-node-red`, where a few nodes talk directly to the server internals.
+
+Most nodes work with the `signalk-client` config node. The following nodes are embedded-only and will show an error status in a normal external Node-RED instance:
+
+- `signalk-app-event`
+- `signalk-input-handler`
+- `signalk-input-handler-next`
+- `signalk-on-delta`
+- `signalk-send-nmea0183`
+- `signalk-send-nmea2000`
 
 ## Signal K Client Config Node
 
-Most nodes use the `signalk-client` config node.
+`config-client` provides the shared Signal K connection used by most external nodes.
 
-Config fields:
+Configuration fields:
 
 - Host
 - Port
@@ -22,231 +42,205 @@ Config fields:
 - Username
 - Password
 
-The config node connects and authenticates automatically.
+The node connects automatically, reconnects when needed, and exposes helper methods for subscribe, PUT, delta send, and path lookup operations.
 
-## Node Reference
+In embedded mode, the editor auto-creates an internal `signalk-client` config entry named `Embedded` for new `signalk-*` nodes.
 
-### Inputs / Subscriptions
+## Node Catalog
 
-#### `signalk-subscribe` (0 in / 1 out)
+### Read And Subscribe Nodes
 
-Subscribe to a Signal K path and emit updates.
+#### `signalk-subscribe`
 
-Key options:
+Subscribes to a Signal K path and emits updates. It supports `vessels.self` or another context, multiple subscription modes, optional source filtering, and flattened output.
 
-- `path` (required)
-- `context` (default `vessels.self`)
-- `mode`: `sendAll`, `sendChanges`, `sendChangesIgnore`
-- `flatten`: output each path/value as a simple message
-- `source`: optional `$source` filter
-- `period`: subscription period in ms
+With `flatten` enabled, each outgoing message contains a single value in `msg.payload`, the Signal K path in `msg.topic`, and source metadata such as `msg.$source`, `msg.source`, `msg.context`, and `msg.timestamp`.
 
-When `flatten` is enabled, output looks like:
+#### `signalk-notification`
 
-```json
-{
-  "topic": "navigation.speedOverGround",
-  "payload": 2.45,
-  "source": {
-    "label": "actisense",
-    "type": "NMEA2000",
-    "pgn": 129026,
-    "src": "3"
-  },
-  "context": "vessels.self",
-  "$source": "actisense.3",
-  "timestamp": "2026-05-14T12:00:00.000Z"
-}
-```
+Subscribes to notifications and emits messages for matching notification paths and states such as `normal`, `alert`, `warn`, `alarm`, or `emergency`.
 
-#### `signalk-notification` (0 in / 1 out)
+#### `signalk-get`
 
-Subscribe to notification updates and emit messages for matching state/path.
+Looks up a single current value from the configured Signal K server. The node uses the configured `path`, or falls back to `msg.topic`.
 
-Options:
+It has two outputs:
 
-- `notification`: a notification path (or leave empty for all)
-- `state`: `any`, `normal`, `alert`, `warn`, `alarm`, `emergency`
+- Output 1: value found, emitted as `msg.payload`
+- Output 2: value not found
 
-Output:
+#### `signalk-on-delta`
 
-```json
-{
-  "payload": {
-    "path": "notifications.anchor",
-    "value": {
-      "state": "alarm",
-      "method": ["visual", "sound"],
-      "message": "Anchor alarm"
-    }
-  }
-}
-```
+Embedded-only. Listens to every delta the local Signal K server receives and emits either the full delta or flattened path/value messages.
 
-#### `signalk-geofence` (1 in / 3 out)
+When flattening is enabled, the node emits one message per value and includes `topic`, `payload`, `context`, `source`, and `$source`. Deltas originating from `signalk-node-red` are filtered out to avoid loops.
 
-Checks vessel position against a circular fence.
+#### `signalk-app-event`
 
-Outputs:
-
-- Output 1: inside fence
-- Output 2: outside fence
-- Output 3: either state (`inside` or `outside`)
-
-Input can update the fence center/radius:
-
-```json
-{
-  "payload": {
-    "latitude": 60.15,
-    "longitude": 24.88,
-    "distance": 150
-  }
-}
-```
-
-If `Use My Position` is enabled, the fence center tracks `vessels.self.navigation.position`.
-
-#### `signalk-put-handler` (0 in / 1 out)
-
-Handles incoming PUT requests for one path.
-
-Behavior:
-
-- On connect, publishes metadata with `supportsPut: true` for the configured path.
-- Emits PUT requests as Node-RED messages.
-- If `Use Put Response` is disabled, responds immediately with `COMPLETED 200`.
-- If enabled, responds with `PENDING 202` and expects a later `signalk-put-success` or `signalk-put-error` response.
-
-Output message:
-
-```json
-{
-  "topic": "electrical.switches.anchorLight.state",
-  "payload": true,
-  "requestId": "..."
-}
-```
+Embedded-only. Listens for a named event emitted on the server `app` object and forwards the event payload as `msg.payload`.
 
 ### Processing Nodes
 
-#### `signalk-flatten-delta` (1 in / 1 out)
+#### `signalk-flatten-delta`
 
-Flattens a Signal K delta (`msg.payload`) into one output per `path/value`.
+Converts a Signal K delta in `msg.payload` into one output message per path/value pair.
 
-Output fields include `topic`, `payload`, `context`, `$source`, and `source`.
+#### `signalk-filter-delta`
 
-#### `signalk-geofence-switch` (1 in / 2 out)
+Filters a delta and emits only the matching path entries. The outgoing `msg.payload` contains the selected path/value object, with `$source` and `source` copied from the originating update.
 
-Routes an incoming message by geofence result.
+#### `signalk-delay`
 
-- Output 1: inside fence (passes original message)
-- Output 2: outside fence (passes original message)
+Delays forwarding until the input payload has remained unchanged for the configured time. This is useful for filtering transient state changes.
 
-You can update config at runtime by sending:
+#### `signalk-geofence`
 
-- `msg.topic = "signalk-config"`
-- `msg.payload = { latitude, longitude, distance }`
+Checks vessel position against a circular geofence.
 
-#### `signalk-delay` (1 in / 1 out)
+It has three outputs:
 
-Delays forwarding until the payload has stayed unchanged for `delay` milliseconds.
+- Output 1: inside fence
+- Output 2: outside fence
+- Output 3: either state, typically with an inside/outside indicator
 
-Useful for suppressing short transients (for example, startup voltage dips).
+You can update the fence at runtime by sending a payload containing `latitude`, `longitude`, and `distance`.
 
-### Outputs / Writers
+#### `signalk-geofence-switch`
 
-#### `signalk-send-pathvalue` (1 in / 0 out)
+Routes an incoming message based on whether the current vessel position is inside or outside a configured fence.
 
-Sends a delta value update.
+It has two outputs:
 
-- Path from configured `path` or `msg.topic`
-- Value from `msg.payload`
-- Optional configured `$source`
-- Optional configured `meta` JSON (sent once per path)
+- Output 1: inside fence
+- Output 2: outside fence
 
-Example input:
+Runtime configuration updates can be sent with `msg.topic = "signalk-config"` and a payload containing `latitude`, `longitude`, and `distance`.
 
-```json
-{
-  "topic": "navigation.speedOverGround",
-  "payload": 5.3
-}
-```
+### Write And Control Nodes
 
-#### `signalk-send-delta` (1 in / 0 out)
+#### `signalk-send-pathvalue`
 
-Sends a fully formed Signal K delta from `msg.payload`.
+Sends a single Signal K value update. The path comes from the node configuration or `msg.topic`, and the value comes from `msg.payload`.
 
-#### `signalk-send-notification` (1 in / 0 out)
+The node can also attach a configured `$source` and optional metadata for the path.
 
-Sends notification deltas.
+#### `signalk-send-delta`
 
-- Uses node config by default
-- If `msg.payload` is an object, it can override `path`, `state`, `method`, `message`, and `$source`
-- `path` is auto-prefixed with `notifications.` if needed
+Sends a complete Signal K delta from `msg.payload`.
 
-Example input:
+#### `signalk-send-notification`
 
-```json
-{
-  "payload": {
-    "path": "notifications.anchor",
-    "state": "alarm",
-    "method": ["visual", "sound"],
-    "message": "Anchor alarm"
-  }
-}
-```
+Sends notification updates. Node configuration can define the notification path, state, method, and message, and an object payload can override them per message.
 
-#### `signalk-send-put` (1 in / 2 out)
+If needed, the node automatically prefixes the path with `notifications.`.
 
-Sends a Signal K PUT request.
+#### `signalk-send-put`
 
-- Path from configured `path` or `msg.topic`
-- Value from `msg.payload`
-- Context defaults to `vessels.self`
-- Optional configured source
+Sends a Signal K PUT request using the configured server connection.
 
-Outputs:
+It has two outputs:
 
-- Output 1: success (`COMPLETED 200`)
-- Output 2: error (non-200 completion)
+- Output 1: successful completion
+- Output 2: failed completion
 
-#### `signalk-put-success` (1 in / 0 out)
+The path comes from the node configuration or `msg.topic`, and the value comes from `msg.payload`.
 
-Responds to a pending PUT request with success.
+#### `signalk-put-handler`
 
-Expected input:
+Registers PUT support for a specific Signal K path and emits incoming PUT requests into the flow.
 
-- `msg.requestId` (required)
-- `msg.statusCode` (optional, default `200`)
-- `msg.message` (optional)
+If `Use Put Response` is disabled, the node responds immediately with `COMPLETED 200`. If enabled, it returns `PENDING 202` and expects a later response from `signalk-put-success` or `signalk-put-error`.
 
-#### `signalk-put-error` (1 in / 0 out)
+The outgoing message includes the requested path in `msg.topic`, the requested value in `msg.payload`, and a `requestId` used to complete the request later.
 
-Responds to a pending PUT request with an error.
+#### `signalk-put-success`
 
-Expected input:
+Completes a pending PUT request successfully. It expects `msg.requestId` and optionally accepts `msg.statusCode` and `msg.message`.
 
-- `msg.requestId` (required)
-- `msg.statusCode` (optional, default `500`)
-- `msg.message` (optional)
+#### `signalk-put-error`
 
-## Typical Flow Patterns
+Completes a pending PUT request with an error. It expects `msg.requestId` and optionally accepts `msg.statusCode` and `msg.message`.
 
-### Read a single path and only emit changes
+### NMEA Output Nodes
 
-1. Add `signalk-subscribe`.
-2. Set `path` (for example `navigation.speedOverGround`).
-3. Set mode to `sendChanges`.
-4. Connect to debug/function nodes.
+#### `signalk-send-nmea0183`
 
-### Handle remote PUT requests asynchronously
+Embedded-only. Emits an event on the local Signal K server to send an NMEA 0183 sentence. `msg.payload` should be an NMEA 0183 string.
 
-1. Add `signalk-put-handler` with `Use Put Response` enabled.
-2. Process request in your flow.
-3. Send success to `signalk-put-success` or failure to `signalk-put-error` using the same `requestId`.
+#### `signalk-send-nmea2000`
+
+Embedded-only. Emits an event on the local Signal K server to send NMEA 2000 output.
+
+If `msg.payload` is an object, the node sends it using the configured JSON event name. Otherwise it sends the payload using the configured raw event name. This supports canboat JSON or a raw Actisense-formatted string.
+
+### UI Switch Nodes
+
+These nodes maintain state in the global `skpersist` context store, which defaults to local storage.
+
+#### `signalk-toggle-switch`
+
+Represents a boolean switch for a Signal K path. If the configured path does not end with `.state`, the suffix is appended automatically.
+
+#### `signalk-multi-switch`
+
+Represents a multi-position switch backed by a configured list of options. Incoming `msg.payload` must match one of the configured option values.
+
+Option values can be strings or numbers, and all configured options must use the selected type.
+
+#### `signalk-dimmer-switch`
+
+Represents a dimmer control. It always publishes a `.dimmingLevel` path with a numeric value between `0` and `1`.
+
+If `Include State` is enabled, it also publishes a boolean `.state` path. Input may be a number, a boolean, or an object with `dimmingLevel` and optional `state`.
+
+#### `signalk-slider-switch`
+
+Represents a numeric slider for a Signal K path. If the configured path does not end with `.state`, the suffix is appended automatically.
+
+The value must be numeric and within the configured range. Optional units and step size are supported for the editor UI.
+
+### Embedded Delta Interception Nodes
+
+#### `signalk-input-handler`
+
+Embedded-only. Registers a handler for incoming deltas before they are applied to the local Signal K server. This lets a flow inspect, modify, or suppress updates for a matching context, path, and optional source.
+
+The emitted message includes the intercepted value and a continuation callback used by the companion next node.
+
+#### `signalk-input-handler-next`
+
+Embedded-only. Passes a modified or reconstructed delta back into the original input pipeline after processing by `signalk-input-handler`.
+
+If `msg.topic` is set, the node builds a delta from the message fields and forwards it to the saved continuation callback.
+
+## Example Flows
+
+### Read One Path
+
+1. Add a `signalk-client` config node.
+2. Add `signalk-subscribe`.
+3. Configure `path` to something like `navigation.speedOverGround`.
+4. Set mode to `sendChanges`.
+5. Wire the output to a Debug node.
+
+### Read A Current Value On Demand
+
+1. Add a `signalk-client` config node.
+2. Add `signalk-get`.
+3. Either configure a fixed path or send the path in `msg.topic`.
+4. Use output 1 for the value and output 2 for not-found handling.
+
+### Handle PUT Requests Asynchronously
+
+1. Add `signalk-put-handler` and enable delayed responses.
+2. Process the request in your flow.
+3. Pass the same `requestId` to `signalk-put-success` or `signalk-put-error` when the operation completes.
+
+## Notes
+
+- External installations should use `signalk-client` for all server communication.
+- Embedded-only nodes depend on globals provided by `signalk-server` and `signalk-node-red`.
+- This package is published as an ES module package, so the shipped node implementations use `export default`.
 
 ## License
 
