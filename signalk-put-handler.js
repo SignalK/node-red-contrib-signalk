@@ -16,6 +16,7 @@ export default function(RED) {
 
     function handlePut(context, path, value, cbInfo) {
       if ( config.pending ) {
+        node.status({ fill: "green", shape: "dot", text: `pending value ${value}` })
         node.send({topic: path, payload: value, cbInfo})
         return {
           "state": "PENDING",
@@ -23,6 +24,7 @@ export default function(RED) {
         }
       } else {
         node.send({topic: path, payload: value})
+        node.status({ fill: "green", shape: "dot", text: `got value ${value}` })
         return {
           "state": "COMPLETED",
           "statusCode": 200
