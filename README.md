@@ -177,9 +177,13 @@ If `msg.payload` is an object, the node sends it using the configured JSON event
 
 These nodes maintain state in the global `skpersist` context store, which defaults to local storage.
 
+All four switch nodes can expose writable Signal K paths with `supportsPut: true`. When `Use Put Response` is enabled, PUT-originated changes are emitted into the flow with `cbInfo` and the node returns `PENDING 202` until a downstream `signalk-put-success` or `signalk-put-error` completes the request. Normal flow input still updates immediately.
+
 #### `signalk-toggle-switch`
 
 Represents a boolean switch for a Signal K path. If the configured path does not end with `.state`, the suffix is appended automatically.
+
+With `Use Put Response` enabled, incoming PUT requests are passed to the flow before completion so you can confirm or reject the state change asynchronously.
 
 #### `signalk-multi-switch`
 
@@ -187,17 +191,23 @@ Represents a multi-position switch backed by a configured list of options. Incom
 
 Option values can be strings or numbers, and all configured options must use the selected type.
 
+With `Use Put Response` enabled, PUT requests emit the selected option plus `cbInfo` so the flow can complete the request later.
+
 #### `signalk-dimmer-switch`
 
 Represents a dimmer control. It always publishes a `.dimmingLevel` path with a numeric value between `0` and `1`.
 
 If `Include State` is enabled, it also publishes a boolean `.state` path. Input may be a number, a boolean, or an object with `dimmingLevel` and optional `state`.
 
+With `Use Put Response` enabled, PUT requests for either `.dimmingLevel` or `.state` are emitted with `cbInfo` and completed asynchronously by the flow.
+
 #### `signalk-slider-switch`
 
 Represents a numeric slider for a Signal K path. If the configured path does not end with `.state`, the suffix is appended automatically.
 
 The value must be numeric and within the configured range. Optional units and step size are supported for the editor UI.
+
+With `Use Put Response` enabled, PUT requests are emitted with `cbInfo` and the flow is responsible for sending the final PUT response.
 
 ### Embedded Delta Interception Nodes
 
@@ -235,6 +245,8 @@ If `msg.topic` is set, the node builds a delta from the message fields and forwa
 1. Add `signalk-put-handler` and enable delayed responses.
 2. Process the request in your flow.
 3. Pass the same `requestId` to `signalk-put-success` or `signalk-put-error` when the operation completes.
+
+The same pattern also works for `signalk-toggle-switch`, `signalk-multi-switch`, `signalk-dimmer-switch`, and `signalk-slider-switch` when `Use Put Response` is enabled. In that case the switch node emits the requested value together with `cbInfo`, and the response nodes complete the original PUT.
 
 ## Notes
 

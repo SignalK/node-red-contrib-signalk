@@ -5,6 +5,7 @@
         defaults: {
           name: {value:""},
           path: {value:"", required: true},
+                    pending: {value:false},
           displayName: {value:""},
           includeState: {value:false},
           server: {value:"", type:"signalk-client", required: true},
@@ -32,6 +33,10 @@
   <div class="form-row">
       <label for="node-input-path"><i class="icon-tag"></i> Path</label>
       <input type="text" id="node-input-path" placeholder="Path">
+  </div>
+  <div class="form-row">
+      <label for="node-input-pending"><i class="icon-tag"></i> Use Put Response</label>
+      <input type="checkbox" id="node-input-pending" style="display:inline-block; width:22px; vertical-align:middle;">
   </div>
   <div class="form-row">
       <label for="node-input-displayName"><i class="icon-tag"></i> Display Name</label>

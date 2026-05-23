@@ -85,7 +85,7 @@ export default function(RED) {
       server.handleMessage(node, delta)
     }
 
-    function handleValue(context, path, value) {
+    function setValue(value) {
       const parsed = parseValue(value)
       let resp
       if (parsed === undefined) {
@@ -99,17 +99,39 @@ export default function(RED) {
       } else {
         globalContext.set(path, parsed, storeName)
         sendValue(parsed)
-        node.send({ topic: path, payload: parsed })
-        node.status({ fill: 'green', shape: 'dot', text: `value: ${parsed}` })
         resp = {
           state: "COMPLETED",
-          statusCode: 200
+          statusCode: 200,
+          value: parsed
         }
       }
       return resp
     }
 
-    server.registerPutHandler(node, path, handleValue)
+    function handlePut(context, path, value, cbInfo) {
+      const res = setValue(value)
+      if (res.statusCode !== 200) {
+        return res
+      }
+
+      if (config.pending) {
+        node.send({ topic: path, payload: res.value, cbInfo })
+        node.status({ fill: 'green', shape: 'dot', text: `pending value ${res.value}` })
+        return {
+          state: 'PENDING',
+          statusCode: 202
+        }
+      }
+
+      node.send({ topic: path, payload: res.value })
+      node.status({ fill: 'green', shape: 'dot', text: `value: ${res.value}` })
+      return {
+        state: 'COMPLETED',
+        statusCode: 200
+      }
+    }
+
+    server.registerPutHandler(node, path, handlePut)
 
     let resendInterval
 
@@ -133,7 +155,11 @@ export default function(RED) {
     server.on('available', onConnect)
 
     node.on('input', msg => {
-      handleValue(null, path, msg.payload)
+      const res = setValue(msg.payload)
+      if (res.statusCode === 200) {
+        node.send({ topic: path, payload: res.value })
+        node.status({ fill: 'green', shape: 'dot', text: `value: ${res.value}` })
+      }
     })
 
     node.on('close', function() {

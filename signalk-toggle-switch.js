@@ -21,17 +21,25 @@ export default function(RED) {
       path += '.state'
     }
 
-    function handlePut(context, path, value, requestId) {
+    function handlePut(context, path, value, cbInfo) {
       value = value === 1 || value === true
       globalContext.set(path, value, storeName)
       sendUpdate(value)
-      node.send({ topic: path, payload: value })
-      node.status({ fill: "green", shape: "dot", text: `put received: ${value}` });
+      if ( config.pending ) {
+        node.status({ fill: "green", shape: "dot", text: `pending value ${value}` })
+        node.send({topic: path, payload: value, cbInfo})
+        return {
+          "state": "PENDING",
+          "statusCode": 202
+        }
+      } else {
+        node.send({ topic: path, payload: value })
+        node.status({ fill: "green", shape: "dot", text: `put received: ${value}` });
 
-      return {
-        requestId: requestId,
-        state: "COMPLETED",
-        statusCode: 200
+        return {
+          state: "COMPLETED",
+          statusCode: 200
+        }
       }
     }
 

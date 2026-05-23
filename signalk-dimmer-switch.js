@@ -90,6 +90,46 @@ export default function(RED) {
       node.status({ fill: 'green', shape: 'dot', text: `dimmingLevel: ${dimmingLevel}${stateText}` })
     }
 
+    function statusTextForPendingPut(path, value) {
+      if (path === dimmingPath) {
+        return `pending dimmingLevel ${value}`
+      }
+
+      return `pending state ${value}`
+    }
+
+    function sendOutputWithCbInfo(dimmingLevel, state, cbInfo) {
+      let dimmingObj = null
+      let stateObj = null
+      let object = { topic: basePath, payload: {} }
+
+      if (state !== null) {
+        stateObj = {
+          topic: statePath,
+          payload: state,
+          cbInfo
+        }
+        object.payload.state = state
+      }
+
+      if (dimmingLevel !== null) {
+        dimmingObj = {
+          topic: dimmingPath,
+          payload: dimmingLevel,
+          cbInfo
+        }
+        object.payload.dimmingLevel = dimmingLevel
+      }
+
+      if (Object.keys(object.payload).length > 0) {
+        object.cbInfo = cbInfo
+      } else {
+        object = null
+      }
+
+      node.send([dimmingObj, stateObj, object])
+    }
+
     function sendOutput(dimmingLevel, state) {
       let dimmingObj = null
       let stateObj = null
@@ -150,18 +190,30 @@ export default function(RED) {
       return { state: 'COMPLETED', statusCode: 200 }
     }
 
-    server.registerPutHandler(node, dimmingPath, (context, path, value, cb) => {
+    server.registerPutHandler(node, dimmingPath, (context, path, value, cbInfo) => {
       const res = setDimmingLevel(value, 'put')
       if (res.statusCode === 200) {
+        if (config.pending) {
+          sendOutputWithCbInfo(value, null, cbInfo)
+          node.status({ fill: 'green', shape: 'dot', text: statusTextForPendingPut(path, value) })
+          return { state: 'PENDING', statusCode: 202 }
+        }
+
         sendOutput(value, null)
       }
       return res
     })
 
     if (includeState) {
-      server.registerPutHandler(node, statePath, (context, path, value, cb) => {
+      server.registerPutHandler(node, statePath, (context, path, value, cbInfo) => {
         const res = setState(value)
         if (res.statusCode === 200) {
+          if (config.pending) {
+            sendOutputWithCbInfo(null, value, cbInfo)
+            node.status({ fill: 'green', shape: 'dot', text: statusTextForPendingPut(path, value) })
+            return { state: 'PENDING', statusCode: 202 }
+          }
+
           sendOutput(null, value)
         }
         return res

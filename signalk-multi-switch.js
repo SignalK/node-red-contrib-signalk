@@ -39,7 +39,7 @@ export default function(RED) {
       path += '.state'
     }
 
-    function handlePut(context, path, value) {
+    function handlePut(context, path, value, cbInfo) {
       const option = getOptionWithValue(value)
       let resp
       if ( !option ) {
@@ -54,11 +54,20 @@ export default function(RED) {
       } else {
         globalContext.set(path, option.value, storeName)
         sendUpdate(option.value)
-        node.send({ topic: path, payload: option.value })
-        node.status({ fill: "green", shape: "dot", text: `put received: ${option.title}` })
-        resp = {
-          state: "COMPLETED",
-          statusCode: 200
+        if (config.pending) {
+          node.send({ topic: path, payload: option.value, cbInfo })
+          node.status({ fill: "green", shape: "dot", text: `pending value ${option.title}` })
+          resp = {
+            state: "PENDING",
+            statusCode: 202
+          }
+        } else {
+          node.send({ topic: path, payload: option.value })
+          node.status({ fill: "green", shape: "dot", text: `put received: ${option.title}` })
+          resp = {
+            state: "COMPLETED",
+            statusCode: 200
+          }
         }
       }
 
