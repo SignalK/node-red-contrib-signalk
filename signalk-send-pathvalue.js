@@ -20,11 +20,6 @@ export default function(RED) {
       try {
         const path = config.path ? config.path : msg.topic
 
-        if (this.server.client.connection === undefined) {
-          node.error('not connected to Signal K server')
-          return
-        }
-
         if (!path) {
           node.error('no topic or path configured')
           return
@@ -43,15 +38,10 @@ export default function(RED) {
               }
             ]
           }
-          if (config.source && config.source.length > 0) {
-            delta.updates[0].$source = config.source
-          }
-          this.server.send(node, delta).then((sent) => {
-            if (sent) {
-              debug('sending meta for path %s with value %j', path, delta)
-              sentMeta[path] = true
-            }
-          })
+
+          this.server.handleMessage(node, delta, config.source && config.source.length > 0 ? config.source : null)
+          debug('sending meta for path %s with value %j', path, delta)
+          sentMeta[path] = true
         }
 
         let delta = {
@@ -71,11 +61,8 @@ export default function(RED) {
         }
         let c = path.lastIndexOf('.')
         //debug('sending delta for path %s with value %j', path, delta)
-        this.server.send(node, delta).then((sent) => {
-          if (sent) {
-            showStatus(`${path.substring(c + 1)}: ${msg.payload}`)
-          }
-        })
+        this.server.handleMessage(node, delta, config.source)
+        showStatus(`${path.substring(c + 1)}: ${msg.payload}`)
       } catch (err) {
         this.server.onError(node, err)
       }

@@ -26,6 +26,7 @@
       "signalk-send-notification": "signalk-send-notification.js",
       "signalk-send-put": "signalk-send-put.js",
       "signalk-geofence": "signalk-geofence.js",
+      "signalk-geofence-switch": "signalk-geofence-switch.js",
       "signalk-delay": "signalk-delay.js",
       "signalk-put-handler": "signalk-put-handler.js",
       "signalk-put-error": "signalk-put-error.js",

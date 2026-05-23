@@ -66,10 +66,12 @@ export default function(RED) {
             }
           ]
         }
-        if ( server.send(node, delta) ) {
-          debug('sending notification with delta %j', delta)
-          showStatus(`sent notification ${path}=${state}`)
-        }
+        server.handleMessage(node, delta).then((sent) => {
+          if (sent) {
+            debug('sending notification with delta %j', delta)
+            showStatus(`sent notification ${path}=${state}`)
+          }
+        })
       } catch (err) {
         server.onError(node, err)
       }

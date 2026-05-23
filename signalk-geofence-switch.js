@@ -1,79 +1,98 @@
-module.exports = function(RED) {
-  function signalk(config) {
-    RED.nodes.createNode(this,config);
-    var node = this;
-    var unsubscribes = []
+import geodist from 'geodist'
+import coreDebug from 'debug'
+const debug = coreDebug('node-red-contrib-signalk:signalk-geofence-switch')
 
-    const geodist = node.context().global.get('geodist')
-    const app = node.context().global.get('app')
+export default function(RED) {
+  function signalk(config) {
+    RED.nodes.createNode(this,config)
+    const node = this
+    const server = RED.nodes.getNode(config.server)
     const context = node.context()
 
-    node.on('input', (msg) => {
+    let currentPosition
+    let selfPosition
 
-      if ( msg.topic === 'signalk-config' ) {
+    const onTargetDelta = (delta) => {
+      const pos = delta?.updates?.[0]?.values?.[0]?.value
+      if (pos && pos.latitude && pos.longitude) {
+        currentPosition = pos
+      }
+    }
+
+    const onSelfDelta = (delta) => {
+      const pos = delta?.updates?.[0]?.values?.[0]?.value
+      if (pos && pos.latitude && pos.longitude) {
+        selfPosition = pos
+      }
+    }
+
+    const onStop = []
+
+    const onAvailable = () => {
+      debug('connected, subscribing to navigation.position for %s', config.context)
+      server.subscribe(config.context, 'navigation.position', undefined, onStop, onTargetDelta)
+      if (config.myposition) {
+        server.subscribe('vessels.self', 'navigation.position', undefined, onStop, onSelfDelta)
+      }
+    }
+    server.on('available', onAvailable)
+
+    node.on('input', (msg) => {
+      if (msg.topic === 'signalk-config' && msg.payload) {
         context.latitude = msg.payload.latitude
         context.longitude = msg.payload.longitude
         context.distance = msg.payload.distance
         return
       }
-      
-      var pos;
 
-      if ( config.context !== 'vessels.self' ) {
-        pos = app.getPath(config.context + '.navigation.position.value')
-      } else {
-        pos = app.getSelfPath('navigation.position.value')
-      }
-
-      if ( !pos || !pos.latitude || !pos.longitude ) {
-        node.status({fill:"red",shape:"dot",text:"no position"});
+      if (!currentPosition || !currentPosition.latitude || !currentPosition.longitude) {
+        node.status({fill:"red",shape:"dot",text:"no position"})
         return
       }
-      
-      var fencePos = null;
-      if ( config.myposition ) {
-        var mypos = app.getSelfPath('navigation.position.value')
-        if ( mypos && mypos.latitude && mypos.longitude ) {
-          fencePos = { lat: mypos.latitude, lon: mypos.longitude }
+
+      let fencePos = null
+      if (config.myposition) {
+        if (selfPosition && selfPosition.latitude && selfPosition.longitude) {
+          fencePos = { lat: selfPosition.latitude, lon: selfPosition.longitude }
         }
       } else {
-        if ( msg.latitude ) {
+        if (msg.latitude && msg.longitude) {
           fencePos = { lat: msg.latitude, lon: msg.longitude }
-        } else if ( context.latitude ) {
+        } else if (context.latitude && context.longitude) {
           fencePos = { lat: context.latitude, lon: context.longitude }
-        } else {        
+        } else {
           fencePos = { lat: config.lat, lon: config.lon }
         }
-        if ( fencePos.lat === 0 && fencePos.lon === 0 ) {
-          node.status({fill:"red",shape:"dot",text:"no lat/lon"});
+
+        if (fencePos.lat === 0 && fencePos.lon === 0) {
+          node.status({fill:"red",shape:"dot",text:"no lat/lon"})
           return
         }
       }
 
-      
-      if ( fencePos ) {
-        let curPos = {lat: pos.latitude, lon: pos.longitude}
-        let dist = geodist(fencePos, 
-                           curPos,
-                           { unit: 'meters'})
-        let distance
-        if ( msg.distance ) {
-          distance = msg.distance
-        } else if ( context.distance ) {
-          distance = context.distance
-        } else {
-          distance = config.distance
-        }
+      if (!fencePos) {
+        node.status({fill:"red",shape:"dot",text:"no fence position"})
+        return
+      }
 
-        if ( dist > distance ) {
-          node.status({fill:"green",shape:"dot",text:"outside fence"});
-          node.send([null, msg ])
-        } else {
-          node.status({fill:"green",shape:"dot",text:"inside fence"});
-          node.send([msg, null])
-        }
+      const curPos = { lat: currentPosition.latitude, lon: currentPosition.longitude }
+      const dist = geodist(fencePos, curPos, { unit: 'meters' })
+      const distance = msg.distance || context.distance || config.distance
+
+      if (dist > distance) {
+        node.status({fill:"green",shape:"dot",text:"outside fence"})
+        node.send([null, msg])
+      } else {
+        node.status({fill:"green",shape:"dot",text:"inside fence"})
+        node.send([msg, null])
       }
     })
+
+    node.on('close', function() {
+      server.removeListener('available', onAvailable)
+      onStop.forEach(f => f())
+    })
   }
-  RED.nodes.registerType("signalk-geofence-switch", signalk);
+
+  RED.nodes.registerType("signalk-geofence-switch", signalk)
 }

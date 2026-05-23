@@ -10,21 +10,11 @@ export default function(RED) {
     const server = RED.nodes.getNode(config.server)
 
     node.on('input', msg => {
-      if (msg.requestId) {
-        const resp = {
-          requestId: msg.requestId,
-          "state": "COMPLETED",
-          "statusCode": msg.statusCode || 200,
-          message: msg.message
-        }
-        server.send(node, resp).then((sent) => {
-          if (sent) {
-            debug('sending put success response %j', resp)
-          }
-        })
-      } else {
-        node.error('No requestId provided for put response')
-      }
+      server.sendPutResponse(node, msg, {
+        state: "COMPLETED",
+        statusCode: msg.statusCode || 200,
+        message: msg.message
+      })
     })
   }
   RED.nodes.registerType("signalk-put-success", SignalK);

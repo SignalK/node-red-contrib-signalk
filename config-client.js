@@ -1,7 +1,37 @@
 
 import { Client } from '@signalk/client'
-
+import { v4 as uuidv4 } from 'uuid'
 import coreDebug from 'debug'
+
+function matchesSubscriptionContext(context, deltaContext, selfId) {
+  if (context === 'vessels.self') {
+    return deltaContext === 'vessels.self' || (selfId !== undefined && deltaContext === selfId)
+  }
+
+  return deltaContext === context
+}
+
+function matchesSubscriptionPath(subscriptionPath, path) {
+  if (subscriptionPath === path) {
+    return true
+  }
+
+  if (subscriptionPath.endsWith('*')) {
+    return path.startsWith(subscriptionPath.slice(0, -1))
+  }
+
+  return false
+}
+
+function deltaMatchesSubscription(delta, context, path, selfId) {
+  if (!delta || !delta.updates || !matchesSubscriptionContext(context, delta.context, selfId)) {
+    return false
+  }
+
+  return delta.updates.some(update => {
+    return Array.isArray(update.values) && update.values.some(pathValue => matchesSubscriptionPath(path, pathValue.path))
+  })
+}
 
 export default function (RED) {
   'use strict'
@@ -25,6 +55,7 @@ export default function (RED) {
 
       this.handleMessage = (node, delta, source) => {
         app.handleMessage(source || 'signalk-node-red', delta)
+        return Promise.resolve(true)
       }
 
       this.on = (event, handler) => {
@@ -69,12 +100,38 @@ export default function (RED) {
           cb
         );
       }
+
+      this.putSelfPath = (node, path, value, cb, source) => {
+        let resp = app.putSelfPath(path, value, (reply) => {
+          if (cb) {
+            cb(reply)
+          }
+        }, source)
+        if ( resp && cb ) {
+          cb(resp)
+        }
+      }
+
+      this.sendPutResponse = (node, msg, resp) => {
+        if ( msg.cbInfo ) {
+          msg.cbInfo(resp)
+          return Promise.resolve(true)
+        } else {
+          node.error('Received put response without cbInfo')
+          return Promise.resolve(false)
+        }
+      }
     } else {
 
       this.hostname = config.hostname
       this.port = config.port
 
       const debug = coreDebug(`node-red-contrib-signalk:config-client-${this.hostname}:${this.port}`)
+
+      this.onError = (node, err) => {
+        node.error(err)
+        node.status({ fill: 'red', shape: 'dot', text: err.message })
+      }
 
       this.client = new Client({
         hostname: this.hostname,
@@ -182,7 +239,33 @@ export default function (RED) {
 
       this.handleMessage = (node, delta, source) => {
         delta['$source'] = source || 'signalk-node-red'
-        this.send(node, delta)
+        return this.send(node, delta)
+      }
+
+      this.subscribe = (context, path, period, onStop, cb) => {
+        const subscription = {
+          context,
+          subscribe: [{
+            path
+          }]
+        }
+
+        if (period !== undefined) {
+          subscription.subscribe[0].period = period
+        }
+
+        const onDelta = (delta) => {
+          if (deltaMatchesSubscription(delta, context, path, this.self)) {
+            cb(delta)
+          }
+        }
+
+        this.client.on('delta', onDelta)
+        onStop.push(() => {
+          this.client.removeListener('delta', onDelta)
+        })
+
+        this.client.subscribe(subscription)
       }
 
       this.on = (event, handler) => {
@@ -190,6 +273,54 @@ export default function (RED) {
           handler()
         }
         originalOn(event, handler)
+      }
+
+      const putListeners = {}
+      let putResponseHandler = null
+
+      this.putSelfPath = (node, path, value, cb, source) => {
+        const requestId = uuidv4()
+
+        if (putResponseHandler === null) {
+          putResponseHandler = (put) => {
+            if (put.requestId === requestId) {
+              const cb = putListeners[put.requestId]
+              if (cb) {
+                cb(put)
+                if (put.state === 'COMPLETED') {
+                  delete putListeners[put.requestId]
+                }
+              }
+            }
+          }
+          this.client.on('message', putResponseHandler)
+
+          putListeners[requestId] = cb
+          const put = {
+            requestId,
+            context: config.context || "vessels.self",
+            put: {
+              path,
+              value,
+              source: config.source && config.source.length > 0 ? config.source : undefined
+            }
+          }
+          try {
+            debug('sending put %j', put)
+            this.send(node, put)
+          } catch (err) {
+            this.onError(node, err)
+          }
+        }
+      }
+
+      this.sendPutResponse = (node, msg, resp) => {
+        if ( msg.cbInfo ) {
+          resp.requestId = msg.cbInfo
+          return this.send(node, resp)
+        } else {
+          return Promise.resolve(false)
+        }
       }
     }
   }

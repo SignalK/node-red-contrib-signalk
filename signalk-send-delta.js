@@ -23,7 +23,7 @@ export default function(RED) {
     
     node.on('input', msg => {
       debug('sending delta %j', msg.payload)
-      server.send(node, msg.payload).then((sent) => {
+      server.handleMessage(node, msg.payload).then((sent) => {
         if (sent) {
           showStatus()
         }

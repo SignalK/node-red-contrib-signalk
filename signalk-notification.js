@@ -22,19 +22,6 @@ export default function(RED) {
     
     var path = config.notification === 'any' || config.notification.length === 0 ? 'notifications.*' : config.notification
 
-    var command = {
-      context: "vessels.self",
-      subscribe: [{
-        path: path,
-        policy: 'instant'
-      }]
-    }
-
-    const onConnect = () => {
-      debug('connected, subscribing with', command)
-      server.client.subscribe(command)
-    }
-
     const on_delta = delta => {
       try {
         let notification = delta.updates[0].values[0]
@@ -51,13 +38,18 @@ export default function(RED) {
       }
     }
 
-    server.client.on('connect', onConnect)
-    
-    server.client.on('delta', on_delta)
+    const onStop = []
+
+    const onAvailable = () => {
+      debug('connected, subscribing with path %s', path)
+      server.subscribe('vessels.self', path, undefined, onStop, on_delta)
+    }
+
+    server.on('available', onAvailable)
 
     node.on('close', function() {
-      server.client.removeListener('delta', on_delta)
-      server.client.removeListener('connect', onConnect)
+      server.removeListener('available', onAvailable)
+      onStop.forEach(f => f())
     })
   }
   

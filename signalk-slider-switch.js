@@ -125,7 +125,7 @@ export default function(RED) {
         })
       }, 5000)
     }
-    server.client.on('authenticated', onConnect)
+    server.on('available', onConnect)
 
     node.on('input', msg => {
       handleValue(null, path, msg.payload)
@@ -133,7 +133,7 @@ export default function(RED) {
 
     node.on('close', function() {
       clearInterval(resendInterval)
-      server.client.removeListener('authenticated', onConnect)
+      server.removeListener('available', onConnect)
       server.unRegisterPutHandler(node, path)
     })
   }

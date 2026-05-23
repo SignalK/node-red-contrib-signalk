@@ -22,22 +22,6 @@ export default function(RED) {
       }
     })
 
-    const subscription = {
-      context: config.context,
-      subscribe: [{
-        path: 'navigation.position',
-        period: config.period
-      }]
-    }
-
-    const selfSubscription = {
-      context: "vessels.self",
-      subscribe: [{
-        path: 'navigation.position',
-        period: config.period
-      }]
-    }
-
     const on_delta = delta => {
       let pos = delta.updates[0].values[0]
 
@@ -46,7 +30,7 @@ export default function(RED) {
         return
       }
 
-      if ( config.myposition && delta.context === server.self ) {
+      if ( config.myposition && delta.context === 'vessels.' + server.self ) {
         node.myposition = pos.value
         //debug('updated self position', node.myposition)
         if ( config.context !== 'vessels.self' ) {
@@ -105,20 +89,20 @@ export default function(RED) {
       }
     }
 
-    const onConnect = () => {
-      debug('connected, subscribing with', subscription)
-      server.client.subscribe(subscription)
+    const onStop = []
+
+    const onAvailable = () => {
+      debug('connected, subscribing to navigation.position for %s', config.context)
+      server.subscribe(config.context, 'navigation.position', config.period, onStop, on_delta)
       if ( config.myposition ) {
-        server.client.subscribe(selfSubscription)
+        server.subscribe('vessels.self', 'navigation.position', config.period, onStop, on_delta)
       }
     }
-    server.client.on('connect', onConnect)
-    
-    server.client.on('delta', on_delta)
+    server.on('available', onAvailable)
 
     node.on('close', function() {
-      server.client.removeListener('delta', on_delta)
-      server.client.removeListener('connect', onConnect)
+      server.removeListener('available', onAvailable)
+      onStop.forEach(f => f())
     })
 
   }

@@ -9,9 +9,9 @@ export default function(RED) {
 
     const server = RED.nodes.getNode(config.server)
 
-    function handlePut(context, path, value, requestId) {
+    function handlePut(context, path, value, cbInfo) {
       if ( config.pending ) {
-        node.send({topic: path, payload: value, requestId})
+        node.send({topic: path, payload: value, cbInfo})
         return {
           "state": "PENDING",
           "statusCode": 202
@@ -25,7 +25,7 @@ export default function(RED) {
       }
     }
 
-    const onConnect = () => {
+    const onAvailable = () => {
       const meta = {
           updates: [
             {
@@ -38,19 +38,16 @@ export default function(RED) {
             }
         ]
       }
-      server.send(node, meta).then((sent) => {
-        if (sent) {
-          debug('sending meta for put handler %j', meta)
-        }
-      })
+      server.handleMessage(node, meta)
+      debug('sending meta for put handler %j', meta)
     }
-    server.client.on('connect', onConnect)
+    server.on('available', onAvailable)
 
     server.registerPutHandler(node, config.path, handlePut)
     
     node.on('close', function() {
       server.unRegisterPutHandler(node, config.path)
-      server.client.removeListener('connect', onConnect)
+      server.removeListener('available', onAvailable)
     })
   }
   

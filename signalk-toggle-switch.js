@@ -83,7 +83,7 @@ export default function(RED) {
       })
     }
 
-    server.client.on('authenticated', onConnect)
+    server.on('available', onConnect)
 
     server.registerPutHandler(node, path, handlePut)
 
@@ -101,7 +101,7 @@ export default function(RED) {
     
     node.on('close', function() {
       server.unRegisterPutHandler(node, path)
-      server.client.removeListener('authenticated', onConnect)
+      server.removeListener('available', onConnect)
       if (resendInterval) {
         clearInterval(resendInterval)
       }
