@@ -1,6 +1,6 @@
 {
   "name": "@signalk/node-red-contrib-signalk",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Node red nodes for use with external node-red installs",
   "main": "index.js",
   "type": "module",
