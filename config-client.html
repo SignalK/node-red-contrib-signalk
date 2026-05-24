@@ -17,6 +17,7 @@
         <label for="node-input-useTLS"><i class="icon-tag"></i> Use TLS</label>
         <input type="checkbox" id="node-config-input-useTLS" placeholder="Use TLS">
     </div>
+
     <div class="form-row">
         <label for="node-config-input-username"><i class="fa fa-bookmark"></i> Username</label>
         <input type="text" id="node-config-input-username">
@@ -24,6 +25,10 @@
     <div class="form-row">
         <label for="node-config-input-password"><i class="fa fa-bookmark"></i> Password</label>
         <input type="text" id="node-config-input-password">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-token"><i class="fa fa-bookmark"></i> Or Token</label>
+        <input type="text" id="node-config-input-token">
     </div>
 </script>
 
@@ -111,8 +116,11 @@
           isEmbedded: { value: false },
           port: { value: 3000 },
           useTLS: { value: false },
-          username: { value: "" },
-          password: { value: "" }
+        },
+        credentials: {
+            username: { type: "text" },
+            password: { type: "password" },
+            token: { type: "text" }
         },
         label: function label() {
             return this.isEmbedded ? "Embedded" : this.hostname + ":" + this.port

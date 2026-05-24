@@ -145,9 +145,10 @@ export default function (RED) {
         wsKeepaliveInterval: 10,
         reconnect: true,
         rejectUnauthorized: false,
-        username: config.username,
-        password: config.password,
+        username: this.credentials.username,
+        password: this.credentials.password,
         useTLS: config.useTLS,
+        token: this.credentials.token,
         autoConnect: false,
         notifications: false
       })
@@ -162,9 +163,9 @@ export default function (RED) {
         })
 
       this.client.on('connect', () => {
-        if (config.username && config.password) {
+        if (this.credentials.username && this.credentials.password) {
           debug('authenticating...')
-          this.client.authenticate(config.username, config.password)
+          this.client.authenticate(this.credentials.username, this.credentials.password)
         }
         this.available = true
         this.emit('available')
@@ -343,7 +344,13 @@ export default function (RED) {
     }
   }
 
-  RED.nodes.registerType('signalk-client', ConfigSignalKClient)
+  RED.nodes.registerType('signalk-client', ConfigSignalKClient, {
+     credentials: {
+         username: {type:"text"},
+         password: {type:"password"},
+         token: {type:"text"}
+     }
+  }); 
 }
 
 
