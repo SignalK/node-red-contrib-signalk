@@ -1,21 +1,21 @@
 <script type="text/javascript">
-  RED.nodes.registerType('signalk-get',{
-    category: 'Signal K',
-    color: '#ffcc01',
+  RED.nodes.registerType("signalk-get", {
+    category: "Signal K",
+    color: "#ffcc01",
     defaults: {
-      server: {value:"", type:"signalk-client", required: true},
-      name: {value:""},
-      path: {value:""},
+      server: { value: "", type: "signalk-client", required: true },
+      name: { value: "" },
+      path: { value: "" },
     },
-    inputs:1,
-    outputs:2,
-    outputLabels: [ 'found', 'not found' ],
+    inputs: 1,
+    outputs: 2,
+    outputLabels: ["found", "not found"],
     icon: "bridge.png",
-    align: 'right',
-    label: function() {
-      return this.name||"signalk-get";
+    align: "right",
+    label: function () {
+      return this.name || "signalk-get";
     },
-    paletteLabel: 'get'
+    paletteLabel: "get",
   });
 </script>
 

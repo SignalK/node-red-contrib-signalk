@@ -1,25 +1,25 @@
 <script type="text/javascript">
-    RED.nodes.registerType('signalk-subscribe',{
-        category: 'Signal K',
-        color: '#ffcc01',
-        defaults: {
-          name: {value:""},
-          mode: {value:"sendAll"},
-          flatten: {value: true},
-          context: {value:"vessels.self"},
-          path: {value:"", required: true},
-          source: {value: ""},
-          period: {value: 1000},
-          server: {value:"", type:"signalk-client", required: true},
-        },
-        inputs:0,
-        outputs:1,
-        icon: "bridge.png",
-        label: function() {
-            return this.name||"signalk-subscribe";
-        },
-        paletteLabel: 'subscribe'
-    });
+  RED.nodes.registerType("signalk-subscribe", {
+    category: "Signal K",
+    color: "#ffcc01",
+    defaults: {
+      name: { value: "" },
+      mode: { value: "sendAll" },
+      flatten: { value: true },
+      context: { value: "vessels.self" },
+      path: { value: "", required: true },
+      source: { value: "" },
+      period: { value: 1000 },
+      server: { value: "", type: "signalk-client", required: true },
+    },
+    inputs: 0,
+    outputs: 1,
+    icon: "bridge.png",
+    label: function () {
+      return this.name || "signalk-subscribe";
+    },
+    paletteLabel: "subscribe",
+  });
 </script>
 
 <script type="text/x-red" data-template-name="signalk-subscribe">
@@ -62,5 +62,5 @@
 </script>
 
 <script type="text/x-red" data-help-name="signalk-subscribe">
-    <p>Input that sends messages for every delta from the given path</p>
+  <p>Input that sends messages for every delta from the given path</p>
 </script>

@@ -1,103 +1,132 @@
-import geodist from 'geodist'
-import coreDebug from 'debug'
-const debug = coreDebug('node-red-contrib-signalk:signalk-geofence-switch')
+import geodist from "geodist";
+import coreDebug from "debug";
+const debug = coreDebug("node-red-contrib-signalk:signalk-geofence-switch");
 
-export default function(RED) {
+export default function (RED) {
   function signalk(config) {
-    RED.nodes.createNode(this,config)
-    const node = this
-    const server = RED.nodes.getNode(config.server)
+    RED.nodes.createNode(this, config);
+    const node = this;
+    const server = RED.nodes.getNode(config.server);
 
     if (!server) {
-      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
-      return
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return;
     }
-    const context = node.context()
+    const context = node.context();
 
-    let currentPosition
-    let selfPosition
+    let currentPosition;
+    let selfPosition;
 
     const onTargetDelta = (delta) => {
-      const pos = delta?.updates?.[0]?.values?.[0]?.value
+      const pos = delta?.updates?.[0]?.values?.[0]?.value;
       if (pos && pos.latitude && pos.longitude) {
-        currentPosition = pos
+        currentPosition = pos;
       }
-    }
+    };
 
     const onSelfDelta = (delta) => {
-      const pos = delta?.updates?.[0]?.values?.[0]?.value
+      const pos = delta?.updates?.[0]?.values?.[0]?.value;
       if (pos && pos.latitude && pos.longitude) {
-        selfPosition = pos
+        selfPosition = pos;
       }
-    }
+    };
 
-    let onStop = []
+    let onStop = [];
 
     const onAvailable = () => {
-      debug('connected, subscribing to navigation.position for %s', config.context)
-      server.subscribe(config.context, 'navigation.position', undefined, onStop, onTargetDelta)
+      debug(
+        "connected, subscribing to navigation.position for %s",
+        config.context,
+      );
+      server.subscribe(
+        config.context,
+        "navigation.position",
+        undefined,
+        onStop,
+        onTargetDelta,
+      );
       if (config.myposition) {
-        server.subscribe('vessels.self', 'navigation.position', undefined, onStop, onSelfDelta)
+        server.subscribe(
+          "vessels.self",
+          "navigation.position",
+          undefined,
+          onStop,
+          onSelfDelta,
+        );
       }
-    }
-    server.on('available', onAvailable)
+    };
+    server.on("available", onAvailable);
 
-    node.on('input', (msg) => {
-      if (msg.topic === 'signalk-config' && msg.payload) {
-        context.latitude = msg.payload.latitude
-        context.longitude = msg.payload.longitude
-        context.distance = msg.payload.distance
-        return
+    node.on("input", (msg) => {
+      if (msg.topic === "signalk-config" && msg.payload) {
+        context.latitude = msg.payload.latitude;
+        context.longitude = msg.payload.longitude;
+        context.distance = msg.payload.distance;
+        return;
       }
 
-      if (!currentPosition || !currentPosition.latitude || !currentPosition.longitude) {
-        node.status({fill:"red",shape:"dot",text:"no position"})
-        return
+      if (
+        !currentPosition ||
+        !currentPosition.latitude ||
+        !currentPosition.longitude
+      ) {
+        node.status({ fill: "red", shape: "dot", text: "no position" });
+        return;
       }
 
-      let fencePos = null
+      let fencePos = null;
       if (config.myposition) {
         if (selfPosition && selfPosition.latitude && selfPosition.longitude) {
-          fencePos = { lat: selfPosition.latitude, lon: selfPosition.longitude }
+          fencePos = {
+            lat: selfPosition.latitude,
+            lon: selfPosition.longitude,
+          };
         }
       } else {
         if (msg.latitude && msg.longitude) {
-          fencePos = { lat: msg.latitude, lon: msg.longitude }
+          fencePos = { lat: msg.latitude, lon: msg.longitude };
         } else if (context.latitude && context.longitude) {
-          fencePos = { lat: context.latitude, lon: context.longitude }
+          fencePos = { lat: context.latitude, lon: context.longitude };
         } else {
-          fencePos = { lat: config.lat, lon: config.lon }
+          fencePos = { lat: config.lat, lon: config.lon };
         }
 
         if (fencePos.lat === 0 && fencePos.lon === 0) {
-          node.status({fill:"red",shape:"dot",text:"no lat/lon"})
-          return
+          node.status({ fill: "red", shape: "dot", text: "no lat/lon" });
+          return;
         }
       }
 
       if (!fencePos) {
-        node.status({fill:"red",shape:"dot",text:"no fence position"})
-        return
+        node.status({ fill: "red", shape: "dot", text: "no fence position" });
+        return;
       }
 
-      const curPos = { lat: currentPosition.latitude, lon: currentPosition.longitude }
-      const dist = geodist(fencePos, curPos, { unit: 'meters' })
-      const distance = msg.distance || context.distance || config.distance
+      const curPos = {
+        lat: currentPosition.latitude,
+        lon: currentPosition.longitude,
+      };
+      const dist = geodist(fencePos, curPos, { unit: "meters" });
+      const distance = msg.distance || context.distance || config.distance;
 
       if (dist > distance) {
-        node.status({fill:"green",shape:"dot",text:"outside fence"})
-        node.send([null, msg])
+        node.status({ fill: "green", shape: "dot", text: "outside fence" });
+        node.send([null, msg]);
       } else {
-        node.status({fill:"green",shape:"dot",text:"inside fence"})
-        node.send([msg, null])
+        node.status({ fill: "green", shape: "dot", text: "inside fence" });
+        node.send([msg, null]);
       }
-    })
+    });
 
-    node.on('close', function() {
-      server.removeListener('available', onAvailable)
-      onStop.forEach(f => f())
-    })
+    node.on("close", function () {
+      server.removeListener("available", onAvailable);
+      onStop.forEach((f) => f());
+    });
   }
 
-  RED.nodes.registerType("signalk-geofence-switch", signalk)
+  RED.nodes.registerType("signalk-geofence-switch", signalk);
 }

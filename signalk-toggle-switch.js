@@ -1,45 +1,56 @@
+import coreDebug from "debug";
+const debug = coreDebug("node-red-contrib-signalk:signalk-toggle-switch");
+const storeName = "skpersist";
 
-import coreDebug from 'debug'
-const debug = coreDebug('node-red-contrib-signalk:signalk-toggle-switch')
-const storeName = 'skpersist'
-
-export default function(RED) {
+export default function (RED) {
   function SignalKToggleSwitch(config) {
-    RED.nodes.createNode(this,config);
+    RED.nodes.createNode(this, config);
     const node = this;
 
-    const server = RED.nodes.getNode(config.server)
+    const server = RED.nodes.getNode(config.server);
 
     if (!server) {
-      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
-      return
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return;
     }
-    const globalContext = node.context().global
+    const globalContext = node.context().global;
 
-    let path = config.path
-    if ( !path.endsWith('.state') ) {
-      path += '.state'
+    let path = config.path;
+    if (!path.endsWith(".state")) {
+      path += ".state";
     }
 
     function handlePut(context, path, value, cbInfo) {
-      value = value === 1 || value === true
-      globalContext.set(path, value, storeName)
-      sendUpdate(value)
-      if ( config.pending ) {
-        node.status({ fill: "green", shape: "dot", text: `pending value ${value}` })
-        node.send({topic: path, payload: value, cbInfo})
+      value = value === 1 || value === true;
+      globalContext.set(path, value, storeName);
+      sendUpdate(value);
+      if (config.pending) {
+        node.status({
+          fill: "green",
+          shape: "dot",
+          text: `pending value ${value}`,
+        });
+        node.send({ topic: path, payload: value, cbInfo });
         return {
-          "state": "PENDING",
-          "statusCode": 202
-        }
+          state: "PENDING",
+          statusCode: 202,
+        };
       } else {
-        node.send({ topic: path, payload: value })
-        node.status({ fill: "green", shape: "dot", text: `put received: ${value}` });
+        node.send({ topic: path, payload: value });
+        node.status({
+          fill: "green",
+          shape: "dot",
+          text: `put received: ${value}`,
+        });
 
         return {
           state: "COMPLETED",
-          statusCode: 200
-        }
+          statusCode: 200,
+        };
       }
     }
 
@@ -50,75 +61,83 @@ export default function(RED) {
             values: [
               {
                 value,
-                path: path
-              }
-            ]
-          }
-        ]
-      }
+                path: path,
+              },
+            ],
+          },
+        ],
+      };
       //debug('sending delta %j', delta)
-      server.handleMessage(node, delta)
+      server.handleMessage(node, delta);
     }
 
-    let resendInterval
+    let resendInterval;
 
     const onConnect = () => {
       globalContext.get(path, storeName, (err, value) => {
-        if ( err ) {
-          node.error('error retrieving value from context store', err)
-          node.status({ fill: "red", shape: "dot", text: 'error retrieving value from context store' });
-          return
+        if (err) {
+          node.error("error retrieving value from context store", err);
+          node.status({
+            fill: "red",
+            shape: "dot",
+            text: "error retrieving value from context store",
+          });
+          return;
         }
         let delta = {
           updates: [
             {
               meta: [
                 {
-                  value: { 
+                  value: {
                     displayName: config.displayName,
-                    supportsPut: true
+                    supportsPut: true,
                   },
-                  path: path
-                }
-              ]
-            }
-          ]
-        }
-        debug('sending meta %j', delta)
-        server.handleMessage(node, delta)
+                  path: path,
+                },
+              ],
+            },
+          ],
+        };
+        debug("sending meta %j", delta);
+        server.handleMessage(node, delta);
 
-        sendUpdate(value !== undefined ? value : false)
+        sendUpdate(value !== undefined ? value : false);
         resendInterval = setInterval(() => {
           globalContext.get(path, storeName, (err, value) => {
-            sendUpdate(value !== undefined ? value : false)
-          })
-        }, 5000)
-      })
-    }
+            sendUpdate(value !== undefined ? value : false);
+          });
+        }, 5000);
+      });
+    };
 
-    server.on('available', onConnect)
+    server.on("available", onConnect);
 
-    server.registerPutHandler(node, path, handlePut)
+    server.registerPutHandler(node, path, handlePut);
 
-    node.on('input', msg => {
-      if ( typeof msg.payload === 'boolean' ) {
-        globalContext.set(path, msg.payload, storeName)
-        sendUpdate(msg.payload)
-        node.status({fill:"green",shape:"dot",text:`input: ${msg.payload}`});
-        node.send({topic: path, payload: msg.payload})
+    node.on("input", (msg) => {
+      if (typeof msg.payload === "boolean") {
+        globalContext.set(path, msg.payload, storeName);
+        sendUpdate(msg.payload);
+        node.status({
+          fill: "green",
+          shape: "dot",
+          text: `input: ${msg.payload}`,
+        });
+        node.send({ topic: path, payload: msg.payload });
       } else {
-        node.error('payload must be boolean')
-        node.status({fill:"red",shape:"dot",text:`invalid input`});
+        node.error("payload must be boolean");
+        node.status({ fill: "red", shape: "dot", text: `invalid input` });
       }
-    })
-    
-    node.on('close', function() {
-      server.unRegisterPutHandler(node, path)
-      server.removeListener('available', onConnect)
+    });
+
+    node.on("close", function () {
+      server.unRegisterPutHandler(node, path);
+      server.removeListener("available", onConnect);
       if (resendInterval) {
-        clearInterval(resendInterval)
+        clearInterval(resendInterval);
       }
-    })
+    });
   }
   RED.nodes.registerType("signalk-toggle-switch", SignalKToggleSwitch);
 }

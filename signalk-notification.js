@@ -1,62 +1,72 @@
-import coreDebug from 'debug'
-const debug = coreDebug('node-red-contrib-signalk:signalk-notification')
+import coreDebug from "debug";
+const debug = coreDebug("node-red-contrib-signalk:signalk-notification");
 
-export default function(RED) {
+export default function (RED) {
   function SignalKNotification(config) {
-    RED.nodes.createNode(this,config);
+    RED.nodes.createNode(this, config);
     var node = this;
 
-    const server = RED.nodes.getNode(config.server)
+    const server = RED.nodes.getNode(config.server);
 
     if (!server) {
-      node.status({ fill: "red", shape: "dot", text: "missing server configuration" })
-      return
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return;
     }
 
-    let showingStatus = false
+    let showingStatus = false;
     function showStatus() {
-      if ( ! showingStatus ) {
-        node.status({fill:"green",shape:"dot",text:"sending"});
+      if (!showingStatus) {
+        node.status({ fill: "green", shape: "dot", text: "sending" });
         showingStatus = true;
-        setTimeout( () => {
+        setTimeout(() => {
           node.status({});
-          showingStatus = false
-        }, 1000)
+          showingStatus = false;
+        }, 1000);
       }
     }
-    
-    var path = config.notification === 'any' || config.notification.length === 0 ? 'notifications.*' : config.notification
 
-    const on_delta = delta => {
+    var path =
+      config.notification === "any" || config.notification.length === 0
+        ? "notifications.*"
+        : config.notification;
+
+    const on_delta = (delta) => {
       try {
-        let notification = delta.updates[0].values[0]
+        let notification = delta.updates[0].values[0];
 
-        debug('received notification', notification)
-        debug('config state', config.state)
+        debug("received notification", notification);
+        debug("config state", config.state);
 
-        if (config.state === 'any' || (notification.value && notification.value.state == config.state)) {
-          showStatus()
-          node.send({ payload: notification })
+        if (
+          config.state === "any" ||
+          (notification.value && notification.value.state == config.state)
+        ) {
+          showStatus();
+          node.send({ payload: notification });
         }
       } catch (err) {
-        server.onError(node, err)
+        server.onError(node, err);
       }
-    }
+    };
 
-    let onStop = []
+    let onStop = [];
 
     const onAvailable = () => {
-      debug('connected, subscribing with path %s', path)
-      server.subscribe('vessels.self', path, undefined, onStop, on_delta)
-    }
+      debug("connected, subscribing with path %s", path);
+      server.subscribe("vessels.self", path, undefined, onStop, on_delta);
+    };
 
-    server.on('available', onAvailable)
+    server.on("available", onAvailable);
 
-    node.on('close', function() {
-      server.removeListener('available', onAvailable)
-      onStop.forEach(f => f())
-    })
+    node.on("close", function () {
+      server.removeListener("available", onAvailable);
+      onStop.forEach((f) => f());
+    });
   }
-  
+
   RED.nodes.registerType("signalk-notification", SignalKNotification);
 }

@@ -1,27 +1,27 @@
 <script type="text/javascript">
-  RED.nodes.registerType('signalk-geofence',{
-    category: 'Signal K',
-    color: '#ffcc01',
+  RED.nodes.registerType("signalk-geofence", {
+    category: "Signal K",
+    color: "#ffcc01",
     defaults: {
-      name: {value:""},
-      mode: {value:"sendAll"},
-      context: {value: "vessels.self"},
-      period: {value: 10000},
+      name: { value: "" },
+      mode: { value: "sendAll" },
+      context: { value: "vessels.self" },
+      period: { value: 10000 },
       myposition: { value: false },
-      lat: {value: 0},
-      lon: {value: 0},
+      lat: { value: 0 },
+      lon: { value: 0 },
       distance: { value: 10 },
-      server: {value:"", type:"signalk-client", required: true}
+      server: { value: "", type: "signalk-client", required: true },
     },
-    inputs:1,
-    inputLabels: [ 'lat/lon/distance' ],
-    outputs:3,
-    outputLabels: [ 'inside fence', 'outside fence', 'either' ],
+    inputs: 1,
+    inputLabels: ["lat/lon/distance"],
+    outputs: 3,
+    outputLabels: ["inside fence", "outside fence", "either"],
     icon: "bridge.png",
-    label: function() {
-      return this.name||"signalk-geofence";
+    label: function () {
+      return this.name || "signalk-geofence";
     },
-    paletteLabel: 'geofence'
+    paletteLabel: "geofence",
   });
 </script>
 
@@ -69,26 +69,26 @@
 </script>
 
 <script type="text/x-red" data-help-name="signalk-geofence">
-  <p>Input that checks if a vessel is inside of the specified geofence</p>
+    <p>Input that checks if a vessel is inside of the specified geofence</p>
 
-<h3>Outputs</h3>
-  <dl class="message-properties">
-    <dt>payload</dt>
-    <dd>Contains 'inside' or 'outside'</dd>
-  </dl>
-  <h3>Details</h3>
-  <p><code>Period</code> specifies how often to check the position</p>
-  <p><code>Use My Position</code> If checked, the Latitude and Longitude setting is ignored and instead the vessel.self position is used. Use this if specifying the context of another vessel and you want the fence to be around the other vessel. It will then fire 'inside' when you're near that vessel.</p>
+  <h3>Outputs</h3>
+    <dl class="message-properties">
+      <dt>payload</dt>
+      <dd>Contains 'inside' or 'outside'</dd>
+    </dl>
+    <h3>Details</h3>
+    <p><code>Period</code> specifies how often to check the position</p>
+    <p><code>Use My Position</code> If checked, the Latitude and Longitude setting is ignored and instead the vessel.self position is used. Use this if specifying the context of another vessel and you want the fence to be around the other vessel. It will then fire 'inside' when you're near that vessel.</p>
 
-  <p><code>Latitude and Longitude</code> specifies the center of the geofence</p>
-  <p><code>Distance</code> The radius of te geofence in meters.
+    <p><code>Latitude and Longitude</code> specifies the center of the geofence</p>
+    <p><code>Distance</code> The radius of te geofence in meters.
 
-  <p>The input payload can be json containing lat, lon, and distance. Distance is optional. </p>
+    <p>The input payload can be json containing lat, lon, and distance. Distance is optional. </p>
 
-<pre><code class="javascript">{
-  "latitude": 72.1213,
-  "longitude": 39.23232,
-  "distance": 10
-}
-</code></pre>
+  <pre><code class="javascript">{
+    "latitude": 72.1213,
+    "longitude": 39.23232,
+    "distance": 10
+  }
+  </code></pre>
 </script>

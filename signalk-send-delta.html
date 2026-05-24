@@ -1,19 +1,19 @@
 <script type="text/javascript">
-  RED.nodes.registerType('signalk-send-delta',{
-    category: 'Signal K',
-    color: '#ffcc01',
+  RED.nodes.registerType("signalk-send-delta", {
+    category: "Signal K",
+    color: "#ffcc01",
     defaults: {
-      name: {value:""},
-      server: {value:"", type:"signalk-client", required: true}
+      name: { value: "" },
+      server: { value: "", type: "signalk-client", required: true },
     },
-    inputs:1,
-    outputs:0,
+    inputs: 1,
+    outputs: 0,
     icon: "bridge.png",
-    align: 'right',
-    label: function() {
-      return this.name||"signalk-send-delta";
+    align: "right",
+    label: function () {
+      return this.name || "signalk-send-delta";
     },
-    paletteLabel: 'send delta'
+    paletteLabel: "send delta",
   });
 </script>
 

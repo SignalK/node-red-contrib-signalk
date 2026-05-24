@@ -1,20 +1,20 @@
 <script type="text/javascript">
-    RED.nodes.registerType('signalk-put-error',{
-        category: 'Signal K',
-        color: '#ffcc01',
-        defaults: {
-          name: {value:""},
-          server: {value:"", type:"signalk-client", required: true}
-        },
-        inputs: 1,
-        outputs: 0,
-        icon: "bridge.png",
-        align: 'right',
-        label: function() {
-            return this.name||"signalk-put-error";
-        },
-        paletteLabel: 'put error'
-    });
+  RED.nodes.registerType("signalk-put-error", {
+    category: "Signal K",
+    color: "#ffcc01",
+    defaults: {
+      name: { value: "" },
+      server: { value: "", type: "signalk-client", required: true },
+    },
+    inputs: 1,
+    outputs: 0,
+    icon: "bridge.png",
+    align: "right",
+    label: function () {
+      return this.name || "signalk-put-error";
+    },
+    paletteLabel: "put error",
+  });
 </script>
 
 <script type="text/x-red" data-template-name="signalk-put-error">

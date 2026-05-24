@@ -5,7 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettier": "prettier --write .",
+    "lint": "eslint --fix .",
+    "ci-lint": "eslint . && prettier --check .",
+    "format": "npm run prettier && npm run lint"
   },
   "author": "Scott Bender",
   "license": "Apache-2.0",
@@ -50,5 +54,12 @@
     "@signalk/client": "^2.4.0",
     "geodist": "^0.2.1",
     "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2"
   }
 }
