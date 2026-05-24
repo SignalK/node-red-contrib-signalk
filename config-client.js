@@ -148,7 +148,6 @@ export default function (RED) {
         username: this.credentials.username,
         password: this.credentials.password,
         useTLS: config.useTLS,
-        token: this.credentials.token,
         autoConnect: false,
         notifications: false
       })
@@ -348,7 +347,6 @@ export default function (RED) {
      credentials: {
          username: {type:"text"},
          password: {type:"password"},
-         token: {type:"text"}
      }
   }); 
 }
