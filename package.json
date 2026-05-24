@@ -1,6 +1,6 @@
 {
   "name": "@signalk/node-red-contrib-signalk",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Node red nodes to access a Signal K Server",
   "main": "index.js",
   "type": "module",
