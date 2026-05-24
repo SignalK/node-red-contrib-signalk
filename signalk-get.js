@@ -1,15 +1,12 @@
+import { getServer } from "./config-client.js";
+
 export default function (RED) {
   function signalKGet(config) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    const server = RED.nodes.getNode(config.server);
+    const server = getServer(RED, node);
     if (!server) {
-      node.status({
-        fill: "red",
-        shape: "dot",
-        text: "missing server configuration",
-      });
       return;
     }
 

@@ -1,4 +1,5 @@
 import coreDebug from "debug";
+import { getServer } from "./config-client.js";
 const debug = coreDebug("node-red-contrib-signalk:signalk-multi-switch");
 
 const storeName = "skpersist";
@@ -21,14 +22,9 @@ export default function (RED) {
       });
     }
 
-    const server = RED.nodes.getNode(config.server);
+    const server = getServer(RED, node);
 
     if (!server) {
-      node.status({
-        fill: "red",
-        shape: "dot",
-        text: "missing server configuration",
-      });
       return;
     }
     const globalContext = node.context().global;

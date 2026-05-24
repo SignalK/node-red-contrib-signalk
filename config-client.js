@@ -2,6 +2,33 @@ import { Client } from "@signalk/client";
 import { v4 as uuidv4 } from "uuid";
 import coreDebug from "debug";
 
+const embeddedClientId = "sk-embeded-id";
+
+export function getServer(RED, node) {
+  let server = RED.nodes.getNode(node.server);
+  if (!server) {
+    if (node.context().global.get("isSKEmbedded")) {
+      server = RED.nodes.getNode(embeddedClientId);
+      if (!server) {
+        node.status({
+          fill: "red",
+          shape: "dot",
+          text: "missing embedded server configuration",
+        });
+        return null;
+      }
+    } else {
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return null;
+    }
+  }
+  return server;
+}
+
 function matchesSubscriptionContext(context, deltaContext, selfId) {
   if (context === "vessels.self") {
     return (

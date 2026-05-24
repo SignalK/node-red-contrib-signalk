@@ -1,19 +1,15 @@
 import geodist from "geodist";
 import coreDebug from "debug";
+import { getServer } from "./config-client.js";
 const debug = coreDebug("node-red-contrib-signalk:signalk-geofence-switch");
 
 export default function (RED) {
   function signalk(config) {
     RED.nodes.createNode(this, config);
     const node = this;
-    const server = RED.nodes.getNode(config.server);
+    const server = getServer(RED, node);
 
     if (!server) {
-      node.status({
-        fill: "red",
-        shape: "dot",
-        text: "missing server configuration",
-      });
       return;
     }
     const context = node.context();
