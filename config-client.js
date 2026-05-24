@@ -299,23 +299,23 @@ export default function (RED) {
             }
           }
           this.client.on('message', putResponseHandler)
+        }
 
-          putListeners[requestId] = cb
-          const put = {
-            requestId,
-            context: config.context || "vessels.self",
-            put: {
-              path,
-              value,
-              source: config.source && config.source.length > 0 ? config.source : undefined
-            }
+        putListeners[requestId] = cb
+        const put = {
+          requestId,
+          context: config.context || "vessels.self",
+          put: {
+            path,
+            value,
+            source: config.source && config.source.length > 0 ? config.source : undefined
           }
-          try {
-            debug('sending put %j', put)
-            this.send(node, put)
-          } catch (err) {
-            this.onError(node, err)
-          }
+        }
+        try {
+          debug('sending put %j', put)
+          this.send(node, put)
+        } catch (err) {
+          this.onError(node, err)
         }
       }
 
