@@ -1,34 +1,42 @@
+import coreDebug from "debug";
+const debug = coreDebug("node-red-contrib-signalk:signalk-send-delta");
 
-import coreDebug from 'debug'
-const debug = coreDebug('node-red-contrib-signalk:signalk-send-delta')
-
-export default function(RED) {
+export default function (RED) {
   function signalKSendDelta(config) {
-    RED.nodes.createNode(this,config);
+    RED.nodes.createNode(this, config);
     var node = this;
 
-    const server = RED.nodes.getNode(config.server)
+    const server = RED.nodes.getNode(config.server);
 
-    let showingStatus = false
+    if (!server) {
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return;
+    }
+
+    let showingStatus = false;
     function showStatus() {
-      if ( ! showingStatus ) {
-        node.status({fill:"green",shape:"dot",text:"sent"});
+      if (!showingStatus) {
+        node.status({ fill: "green", shape: "dot", text: "sent" });
         showingStatus = true;
-        setTimeout( () => {
+        setTimeout(() => {
           node.status({});
-          showingStatus = false
-        }, 1000)
+          showingStatus = false;
+        }, 1000);
       }
     }
-    
-    node.on('input', msg => {
-      debug('sending delta %j', msg.payload)
-      server.send(node, msg.payload).then((sent) => {
+
+    node.on("input", (msg) => {
+      debug("sending delta %j", msg.payload);
+      server.handleMessage(node, msg.payload).then((sent) => {
         if (sent) {
-          showStatus()
+          showStatus();
         }
-      })
-    })
+      });
+    });
   }
   RED.nodes.registerType("signalk-send-delta", signalKSendDelta);
 }

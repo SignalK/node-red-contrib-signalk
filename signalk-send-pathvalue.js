@@ -1,57 +1,62 @@
+import coreDebug from "debug";
+const debug = coreDebug("node-red-contrib-signalk:signalk-send-pathvalue");
 
-import coreDebug from 'debug'
-const debug = coreDebug('node-red-contrib-signalk:signalk-send-pathvalue')
-
-export default function(RED) {
+export default function (RED) {
   function signalKSendPathValue(config) {
-    RED.nodes.createNode(this,config);
+    RED.nodes.createNode(this, config);
     var node = this;
 
-    var source = config.name ? 'node-red-' + config.name : 'node-red'
-    var sentMeta = {}
+    var sentMeta = {};
 
-    this.server = RED.nodes.getNode(config.server)
+    this.server = RED.nodes.getNode(config.server);
+
+    if (!this.server) {
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return;
+    }
 
     function showStatus(text) {
-      node.status({fill:"green",shape:"dot",text:text});
+      node.status({ fill: "green", shape: "dot", text: text });
     }
-    
-    node.on('input', msg => {
-      try {
-        const path = config.path ? config.path : msg.topic
 
-        if (this.server.client.connection === undefined) {
-          node.error('not connected to Signal K server')
-          return
-        }
+    node.on("input", (msg) => {
+      try {
+        const path = config.path ? config.path : msg.topic;
 
         if (!path) {
-          node.error('no topic or path configured')
-          return
+          node.error("no topic or path configured");
+          return;
         }
 
-        if (typeof config.meta !== 'undefined' && config.meta !== "" && !sentMeta[path]) {
+        if (
+          typeof config.meta !== "undefined" &&
+          config.meta !== "" &&
+          !sentMeta[path]
+        ) {
           let delta = {
             updates: [
               {
                 meta: [
                   {
                     value: JSON.parse(config.meta),
-                    path
-                  }
-                ]
-              }
-            ]
-          }
-          if (config.source && config.source.length > 0) {
-            delta.updates[0].$source = config.source
-          }
-          this.server.send(node, delta).then((sent) => {
-            if (sent) {
-              debug('sending meta for path %s with value %j', path, delta)
-              sentMeta[path] = true
-            }
-          })
+                    path,
+                  },
+                ],
+              },
+            ],
+          };
+
+          this.server.handleMessage(
+            node,
+            delta,
+            config.source && config.source.length > 0 ? config.source : null,
+          );
+          debug("sending meta for path %s with value %j", path, delta);
+          sentMeta[path] = true;
         }
 
         let delta = {
@@ -60,26 +65,23 @@ export default function(RED) {
               values: [
                 {
                   value: msg.payload,
-                  path
-                }
-              ]
-            }
-          ]
-        }
+                  path,
+                },
+              ],
+            },
+          ],
+        };
         if (config.source && config.source.length > 0) {
-          delta.updates[0].$source = config.source
+          delta.updates[0].$source = config.source;
         }
-        let c = path.lastIndexOf('.')
+        let c = path.lastIndexOf(".");
         //debug('sending delta for path %s with value %j', path, delta)
-        this.server.send(node, delta).then((sent) => {
-          if (sent) {
-            showStatus(`${path.substring(c + 1)}: ${msg.payload}`)
-          }
-        })
+        this.server.handleMessage(node, delta, config.source);
+        showStatus(`${path.substring(c + 1)}: ${msg.payload}`);
       } catch (err) {
-        this.server.onError(node, err)
+        this.server.onError(node, err);
       }
-    })
+    });
   }
   RED.nodes.registerType("signalk-send-pathvalue", signalKSendPathValue);
 }

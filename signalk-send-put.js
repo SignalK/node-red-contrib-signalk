@@ -1,59 +1,63 @@
-import { v4 as uuidv4 } from 'uuid'
-import coreDebug from 'debug'
-const debug = coreDebug('node-red-contrib-signalk:signalk-send-put')
+import coreDebug from "debug";
+const debug = coreDebug("node-red-contrib-signalk:signalk-send-put");
 
-export default function(RED) {
+export default function (RED) {
   function signalKSendPut(config) {
-    RED.nodes.createNode(this,config)
-    var node = this
+    RED.nodes.createNode(this, config);
+    var node = this;
 
-    const server = RED.nodes.getNode(config.server)
+    const server = RED.nodes.getNode(config.server);
 
-    node.on('input', msg => {
-      node.status({fill:"yellow",shape:"dot",text:`sending...`})
+    if (!server) {
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return;
+    }
+
+    node.on("input", (msg) => {
+      node.status({ fill: "yellow", shape: "dot", text: `sending...` });
       try {
-        const path = config.path && config.path.length > 0 ? config.path : msg.topic
-        const requestId = uuidv4()
-
-        const onMessage = (put) => {
-          if (put.requestId === requestId) {
-            debug('received put %j', put)
-            if (put.state === 'COMPLETED' ) {
-              server.client.removeListener('message', onMessage)
-              if ( put.statusCode === 200 ) {
-                node.status({fill:'green',shape:"dot",text:`success, value: ${msg.payload}`})
-                node.send([msg , null])
+        const path =
+          config.path && config.path.length > 0 ? config.path : msg.topic;
+        server.putSelfPath(
+          node,
+          path,
+          msg.payload,
+          (reply) => {
+            if (reply.state === "COMPLETED") {
+              if (reply.statusCode === 200) {
+                node.status({
+                  fill: "green",
+                  shape: "dot",
+                  text: `value: ${msg.payload}`,
+                });
+                node.send([
+                  { payload: reply, putCallBack: msg.putCallBack },
+                  null,
+                ]);
               } else {
-                node.status({fill:'red',shape:"dot",text:`error ${put.message || ''}`})
-                node.error(`put error ${put.statusCode} ${put.message || ''}`)
-                node.send([null, msg])
+                node.status({ fill: "red", shape: "dot", text: `error` });
+                node.error(
+                  `put error ${reply.statusCode} ${reply.message || ""}`,
+                );
+                node.send([
+                  null,
+                  { payload: reply, putCallBack: msg.putCallBack },
+                ]);
               }
-            } else if ( put.state === 'PENDING' ) {
-              node.status({fill:'yellow',shape:"dot",text:'pending...'})
+            } else if (reply.state === "PENDING") {
+              node.status({ fill: "yellow", shape: "dot", text: "pending..." });
             }
-          }
-        }
-        server.client.on('message', onMessage)
-
-        const put = {
-          requestId,
-          context: config.context || "vessels.self",
-          put: { 
-            path,
-            value: msg.payload,
-            source: config.source && config.source.length > 0 ? config.source : undefined
-          }
-        }
-        debug('sending put %j', put)
-        server.send(node, put).then((sent) => {
-          if (sent) {
-            node.status({fill:'green',shape:"dot",text:`sent value: ${msg.payload}`})
-          }
-        })
+          },
+          config.source && config.source.length > 0 ? config.source : undefined,
+        );
       } catch (err) {
-        server.onError(node, err)
+        server.onError(node, err);
       }
-    })
+    });
   }
-  RED.nodes.registerType("signalk-send-put", signalKSendPut)
+  RED.nodes.registerType("signalk-send-put", signalKSendPut);
 }

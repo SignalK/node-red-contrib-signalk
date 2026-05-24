@@ -1,28 +1,28 @@
 <script type="text/javascript">
-  RED.nodes.registerType('signalk-send-pathvalue',{
-    category: 'Signal K',
-    color: '#ffcc01',
+  RED.nodes.registerType("signalk-send-pathvalue", {
+    category: "Signal K",
+    color: "#ffcc01",
     defaults: {
-      name: {value:""},
-      path: {value:""},
-      source: {value: ""},
-      meta: {value:"", required:false},
-      server: {value:"", type:"signalk-client"},
+      name: { value: "" },
+      path: { value: "" },
+      source: { value: "" },
+      meta: { value: "", required: false },
+      server: { value: "", type: "signalk-client", required: true },
     },
-    inputs:1,
-    outputs:0,
+    inputs: 1,
+    outputs: 0,
     icon: "bridge.png",
-    align: 'right',
-    label: function() {
-      return this.name||"signalk-send-pathvalue";
+    align: "right",
+    label: function () {
+      return this.name || "signalk-send-pathvalue";
     },
-    paletteLabel: 'send pathvalue',
+    paletteLabel: "send pathvalue",
     oneditprepare: () => {
       $("#node-input-meta").typedInput({
-        type:"json",
-        types:["json"]
-      })
-    }
+        type: "json",
+        types: ["json"],
+      });
+    },
   });
 </script>
 
@@ -51,12 +51,12 @@
 
 <script type="text/x-red" data-help-name="signalk-send-pathvalue">
 
-  <p>Output that sends a delta through the server. Input should be topic and payload</p>
+    <p>Output that sends a delta through the server. Input should be topic and payload</p>
 
-<pre><code class="javascript">  
-{
-  "topic":"navigation.speedOverGround",
-  "payload":20.45
-}
-</code></pre>
+  <pre><code class="javascript">
+  {
+    "topic":"navigation.speedOverGround",
+    "payload":20.45
+  }
+  </code></pre>
 </script>

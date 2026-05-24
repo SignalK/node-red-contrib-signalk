@@ -1,20 +1,20 @@
 <script type="text/javascript">
-  RED.nodes.registerType('signalk-notification',{
-    category: 'Signal K',
-    color: '#ffcc01',
+  RED.nodes.registerType("signalk-notification", {
+    category: "Signal K",
+    color: "#ffcc01",
     defaults: {
-      name: {value:""},
-      notification: {value: ""},
-      state: {value:"alarm"},
-      server: {value:"", type:"signalk-client"}
+      name: { value: "" },
+      notification: { value: "" },
+      state: { value: "alarm" },
+      server: { value: "", type: "signalk-client", required: true },
     },
-    inputs:0,
-    outputs:1,
+    inputs: 0,
+    outputs: 1,
     icon: "bridge.png",
-    label: function() {
-      return this.name||"signalk-notification";
+    label: function () {
+      return this.name || "signalk-notification";
     },
-    paletteLabel: 'notification'
+    paletteLabel: "notification",
   });
 </script>
 
@@ -45,20 +45,20 @@
 </script>
 
 <script type="text/x-red" data-help-name="signalk-notification">
-<p>Input that sends a message when a notification is received. Configuration allows messages for a specific notification or any notification. The notification state can also be specified. Payload will be the notification path and value.</p>
+  <p>Input that sends a message when a notification is received. Configuration allows messages for a specific notification or any notification. The notification state can also be specified. Payload will be the notification path and value.</p>
 
-<pre><code class="javascript">
-{
-  "path: "notifications.anchorAlarm",
-  "value" : {
-    "state" : "emergency",
-    "method" : [
-      "visual",
-      "sound"
-    ],
-    "timestamp" : "2018-06-15T15:01:55.007Z",
-    "message" : "Anchor Alarm - Emergency"
+  <pre><code class="javascript">
+  {
+    "path: "notifications.anchorAlarm",
+    "value" : {
+      "state" : "emergency",
+      "method" : [
+        "visual",
+        "sound"
+      ],
+      "timestamp" : "2018-06-15T15:01:55.007Z",
+      "message" : "Anchor Alarm - Emergency"
+    }
   }
-}
-</code></pre>
+  </code></pre>
 </script>

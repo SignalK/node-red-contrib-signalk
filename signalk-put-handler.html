@@ -1,21 +1,21 @@
 <script type="text/javascript">
-    RED.nodes.registerType('signalk-put-handler',{
-        category: 'Signal K',
-        color: '#ffcc01',
-        defaults: {
-          name: {value:""},
-          path: {value:""},
-          pending: {value: false},
-          server: {value:"", type:"signalk-client"}
-        },
-        inputs:0,
-        outputs:1,
-        icon: "bridge.png",
-        label: function() {
-            return this.name||"signalk-put-handler";
-        },
-        paletteLabel: 'put handler'
-    });
+  RED.nodes.registerType("signalk-put-handler", {
+    category: "Signal K",
+    color: "#ffcc01",
+    defaults: {
+      name: { value: "" },
+      path: { value: "" },
+      pending: { value: false },
+      server: { value: "", type: "signalk-client", required: true },
+    },
+    inputs: 0,
+    outputs: 1,
+    icon: "bridge.png",
+    label: function () {
+      return this.name || "signalk-put-handler";
+    },
+    paletteLabel: "put handler",
+  });
 </script>
 
 <script type="text/x-red" data-template-name="signalk-put-handler">
@@ -38,6 +38,6 @@
 </script>
 
 <script type="text/x-red" data-help-name="signalk-put-handler">
-    <p>Input that sends messages when a PUT is sent to the server for the given path</p>
-    <p>If "Use Put Response" is checked, the node will respond with status PENDING, use the signalk-put-response node to handle the response.</p>
+  <p>Input that sends messages when a PUT is sent to the server for the given path</p>
+  <p>If "Use Put Response" is checked, the node will respond with status PENDING, use the signalk-put-response node to handle the response.</p>
 </script>

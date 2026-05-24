@@ -1,26 +1,25 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-send-put", {
+  RED.nodes.registerType("signalk-get", {
     category: "Signal K",
     color: "#ffcc01",
     defaults: {
+      server: { value: "", type: "signalk-client", required: true },
       name: { value: "" },
       path: { value: "" },
-      source: { value: "" },
-      server: { value: "", type: "signalk-client", required: true },
     },
     inputs: 1,
     outputs: 2,
-    outputLabels: ["success", "error"],
+    outputLabels: ["found", "not found"],
     icon: "bridge.png",
     align: "right",
     label: function () {
-      return this.name || "signalk-send-put";
+      return this.name || "signalk-get";
     },
-    paletteLabel: "send put",
+    paletteLabel: "get",
   });
 </script>
 
-<script type="text/x-red" data-template-name="signalk-send-put">
+<script type="text/x-red" data-template-name="signalk-get">
   <div class="form-row">
         <label for="node-input-server"><i class="icon-tag"></i> Server</label>
         <input type="text" id="node-input-server" placeholder="Server">
@@ -33,12 +32,8 @@
     <label for="node-input-path"><i class="icon-tag"></i> Path</label>
     <input type="text" id="node-input-path" placeholder="Path">
   </div>
-  <div class="form-row">
-    <label for="node-input-source"><i class="icon-tag"></i> $Source</label>
-    <input type="text" id="node-input-source" placeholder="$Source">
-  </div>
 </script>
 
-<script type="text/x-red" data-help-name="signalk-send-put">
-  <p>Output that send a SignalK put request via `app.putSelfPath`. Input should be the value to put. The topic will be used as the path if none is entered.</p>
+<script type="text/x-red" data-help-name="signalk-get">
+  <p>Output that retrieves a SignalK value. Input should be the path to get. The topic will be used as the path if none is entered.</p>
 </script>

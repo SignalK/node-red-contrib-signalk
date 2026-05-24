@@ -1,23 +1,24 @@
 <script type="text/javascript">
-    RED.nodes.registerType('signalk-toggle-switch',{
-        category: 'Signal K',
-        color: '#ffcc01',
-        defaults: {
-          name: {value:""},
-          path: {value:"", required: true},
-          displayName: {value:""},
-          server: {value:"", type:"signalk-client"},
-        },
-        inputs:1,
-        outputs:1,
-        outputLabels: [ 'state' ],
-        inputLabels: [ 'state' ],
-        icon: "bridge.png",
-        label: function() {
-            return this.name||"signalk-toggle-switch";
-        },
-        paletteLabel: 'toggle switch'
-    });
+  RED.nodes.registerType("signalk-toggle-switch", {
+    category: "Signal K",
+    color: "#ffcc01",
+    defaults: {
+      name: { value: "" },
+      path: { value: "", required: true },
+      pending: { value: false },
+      displayName: { value: "" },
+      server: { value: "", type: "signalk-client", required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    outputLabels: ["state"],
+    inputLabels: ["state"],
+    icon: "bridge.png",
+    label: function () {
+      return this.name || "signalk-toggle-switch";
+    },
+    paletteLabel: "toggle switch",
+  });
 </script>
 
 <script type="text/x-red" data-template-name="signalk-toggle-switch">
@@ -34,12 +35,16 @@
         <input type="text" id="node-input-path" placeholder="Path">
   </div>
   <div class="form-row">
+        <label for="node-input-pending"><i class="icon-tag"></i> Use Put Response</label>
+        <input type="checkbox" id="node-input-pending">
+  </div>
+  <div class="form-row">
         <label for="node-input-displayName"><i class="icon-tag"></i> Display Name</label>
         <input type="text" id="node-input-displayName" placeholder="Display Name">
   </div>
 </script>
 
 <script type="text/x-red" data-help-name="signalk-toggle-switch">
-    <p>Toggle switch for the given path in the Signal K server. ".state" will be appended automatically if not present.</p>
-    <p>The state of the switch is stored in the global context in a store called skpersist which defaults to localstorage.</p>
+  <p>Toggle switch for the given path in the Signal K server. ".state" will be appended automatically if not present.</p>
+  <p>The state of the switch is stored in the global context in a store called skpersist which defaults to localstorage.</p>
 </script>
