@@ -2,6 +2,39 @@ import { Client } from "@signalk/client";
 import { v4 as uuidv4 } from "uuid";
 import coreDebug from "debug";
 
+const embeddedClientId = "sk-embeded-id";
+let createEmbeddedClient;
+
+export function getServer(RED, node) {
+  let server = RED.nodes.getNode(node.server);
+  if (!server) {
+    if (node.context().global.get("isSKEmbedded")) {
+      server = RED.nodes.getNode(embeddedClientId);
+      if (!server) {
+        if (createEmbeddedClient) {
+          server = createEmbeddedClient();
+        }
+        if (!server) {
+          node.status({
+            fill: "red",
+            shape: "dot",
+            text: "missing embedded server configuration",
+          });
+          return null;
+        }
+      }
+    } else {
+      node.status({
+        fill: "red",
+        shape: "dot",
+        text: "missing server configuration",
+      });
+      return null;
+    }
+  }
+  return server;
+}
+
 function matchesSubscriptionContext(context, deltaContext, selfId) {
   if (context === "vessels.self") {
     return (
@@ -392,28 +425,7 @@ export default function (RED) {
       password: { type: "password" },
     },
   });
+
+  createEmbeddedClient = () =>
+    new ConfigSignalKClient({ id: embeddedClientId, isEmbedded: true });
 }
-
-/*
-
-    let hasClient = false
-    RED.nodes.eachConfig(function (n) {
-      if (n.id === 'sk-embeded-id')
-        hasClient = true
-    });
-
-    console.log('has client?', RED.nodes.getNode('sk-embeded-id'))
-    if (!hasClient) {
-      var clientNode = {
-        id: "sk-embeded-id",
-        _def: RED.nodes.getType("signalk-client"),
-        type: "signalk-client",
-        valid: true,
-        isEmbedded: true
-      };
-      RED.nodes.add(clientNode);
-      RED.nodes.dirty(true);
-    }
-
-
-*/

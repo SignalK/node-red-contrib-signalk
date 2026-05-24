@@ -1,5 +1,6 @@
 import geodist from "geodist";
 import coreDebug from "debug";
+import { getServer } from "./config-client.js";
 const debug = coreDebug("node-red-contrib-signalk:signalk-geofence");
 
 export default function (RED) {
@@ -7,14 +8,9 @@ export default function (RED) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    const server = RED.nodes.getNode(config.server);
+    const server = getServer(RED, node);
 
     if (!server) {
-      node.status({
-        fill: "red",
-        shape: "dot",
-        text: "missing server configuration",
-      });
       return;
     }
 

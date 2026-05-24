@@ -1,4 +1,5 @@
 import coreDebug from "debug";
+import { getServer } from "./config-client.js";
 const debug = coreDebug("node-red-contrib-signalk:signalk-send-pathvalue");
 
 export default function (RED) {
@@ -8,14 +9,9 @@ export default function (RED) {
 
     var sentMeta = {};
 
-    this.server = RED.nodes.getNode(config.server);
+    this.server = getServer(RED, node);
 
     if (!this.server) {
-      node.status({
-        fill: "red",
-        shape: "dot",
-        text: "missing server configuration",
-      });
       return;
     }
 
