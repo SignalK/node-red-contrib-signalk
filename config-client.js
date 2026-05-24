@@ -13,7 +13,7 @@ export function getServer(RED, node) {
       if (!server) {
         if (createEmbeddedClient) {
           server = createEmbeddedClient();
-        } 
+        }
         if (!server) {
           node.status({
             fill: "red",
