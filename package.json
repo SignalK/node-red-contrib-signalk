@@ -1,7 +1,7 @@
 {
   "name": "@signalk/node-red-contrib-signalk",
   "version": "1.2.0",
-  "description": "Node red nodes for use with external node-red installs",
+  "description": "Node red nodes to access a Signal K Server",
   "main": "index.js",
   "type": "module",
   "scripts": {
