@@ -22,13 +22,13 @@ export default function(RED) {
             if ( reply.statusCode === 200 ) {
               node.status({fill:'green',shape:"dot",text:`value: ${msg.payload}`})
               node.send([{ payload: reply, putCallBack: msg.putCallBack}, null])
-            } else if ( reply.state === 'PENDING' ) {
-              node.status({fill:'yellow',shape:"dot",text:'pending...'})
             } else {
               node.status({fill:'red',shape:"dot",text:`error`})
               node.error(`put error ${reply.statusCode} ${reply.message || ''}`)
               node.send([null, { payload: reply, putCallBack: msg.putCallBack}])
             }
+          } else if ( reply.state === 'PENDING' ) {
+            node.status({ fill: 'yellow', shape: "dot", text: 'pending...' })
           }
         }, config.source && config.source.length > 0 ? config.source : undefined)
       } catch (err) {
