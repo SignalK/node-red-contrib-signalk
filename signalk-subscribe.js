@@ -116,7 +116,7 @@ export default function(RED) {
       }
     }
 
-    const onStop = []
+    let onStop = []
 
     const onAvailable = () => {
       server.subscribe(config.context, config.path, config.period, onStop, on_delta)

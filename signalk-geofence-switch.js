@@ -31,7 +31,7 @@ export default function(RED) {
       }
     }
 
-    const onStop = []
+    let onStop = []
 
     const onAvailable = () => {
       debug('connected, subscribing to navigation.position for %s', config.context)

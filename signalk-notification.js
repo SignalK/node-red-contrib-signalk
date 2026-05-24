@@ -43,7 +43,7 @@ export default function(RED) {
       }
     }
 
-    const onStop = []
+    let onStop = []
 
     const onAvailable = () => {
       debug('connected, subscribing with path %s', path)
