@@ -46,7 +46,7 @@ export default function (RED) {
       const app = this.context().global.get('app')
       const smanager = this.context().global.get('subscriptionmanager')
 
-      this.self = app.selfId
+      this.self = app.selfContext
       
       this.onError = (node, err) => {
         node.error(err)
@@ -94,7 +94,7 @@ export default function (RED) {
           onStop, 
           (err) => {
             if (err) {
-              node.error(err)
+              this.error(err)
             }
           },
           cb
@@ -288,13 +288,11 @@ export default function (RED) {
 
         if (putResponseHandler === null) {
           putResponseHandler = (put) => {
-            if (put.requestId === requestId) {
-              const cb = putListeners[put.requestId]
-              if (cb) {
-                cb(put)
-                if (put.state === 'COMPLETED') {
-                  delete putListeners[put.requestId]
-                }
+            const cb = putListeners[put.requestId]
+            if (cb) {
+              cb(put)
+              if (put.state === 'COMPLETED') {
+                delete putListeners[put.requestId]
               }
             }
           }
