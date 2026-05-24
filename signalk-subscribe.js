@@ -1,5 +1,6 @@
 
 import coreDebug from 'debug'
+import { isDeepStrictEqual } from 'node:util'
 const debug = coreDebug('node-red-contrib-signalk:signalk-subscribe')
 
 export default function(RED) {
@@ -57,7 +58,7 @@ export default function(RED) {
                 } else if (!config.mode
                   || config.mode === 'sendAll'
                   || typeof last === 'undefined'
-                  || !_.isEqual(last, current)) {
+                  || !isDeepStrictEqual(last, current)) {
                   node.context()[update.values[0].path] = current
                   copy.updates.push(update)
                 } else {
@@ -91,7 +92,7 @@ export default function(RED) {
                   } else if (!config.mode
                     || config.mode === 'sendAll'
                     || typeof last === 'undefined'
-                    || !_.isEqual(last, current)) {
+                    || !isDeepStrictEqual(last, current)) {
                     showStatus(pathValue.value)
                     //debug('sending update for path %s with value %o', pathValue.path, pathValue.value)
                     node.context()[pathValue.path] = current
