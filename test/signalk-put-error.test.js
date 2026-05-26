@@ -20,7 +20,7 @@ describe("signalk-put-error", () => {
     node._trigger("input", { cbInfo: "cb-123" });
 
     assert.equal(server.sendPutResponse.callCount, 1);
-    const [, msg, resp] = server.sendPutResponse.getCall(0).args;
+    const [, , resp] = server.sendPutResponse.getCall(0).args;
     assert.equal(resp.state, "COMPLETED");
     assert.equal(resp.statusCode, 500);
   });

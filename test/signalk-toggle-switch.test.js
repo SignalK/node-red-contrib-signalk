@@ -44,7 +44,12 @@ describe("signalk-toggle-switch", () => {
   it("PUT handler sends boolean value and returns COMPLETED/200 by default", () => {
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.switches.0.state", true, "cb-id");
+    const result = handler(
+      "vessels.self",
+      "electrical.switches.0.state",
+      true,
+      "cb-id",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 200);
@@ -61,7 +66,9 @@ describe("signalk-toggle-switch", () => {
   });
 
   it("PUT handler returns PENDING/202 when config.pending is true", () => {
-    const { RED: r2, registeredTypes: rt2 } = createRED({ "server-id": server });
+    const { RED: r2, registeredTypes: rt2 } = createRED({
+      "server-id": server,
+    });
     registerToggleSwitch(r2);
     const pendingNode = {};
     rt2["signalk-toggle-switch"].call(pendingNode, {
@@ -73,7 +80,12 @@ describe("signalk-toggle-switch", () => {
     // server.registerPutHandler was called twice now; take the last one
     const handler = server.registerPutHandler.lastCall.args[2];
 
-    const result = handler("vessels.self", "electrical.switches.1.state", false, "cb-id");
+    const result = handler(
+      "vessels.self",
+      "electrical.switches.1.state",
+      false,
+      "cb-id",
+    );
 
     assert.equal(result.state, "PENDING");
     assert.equal(result.statusCode, 202);
@@ -103,7 +115,10 @@ describe("signalk-toggle-switch", () => {
     const calls = server.handleMessage.getCalls();
     const valueDelta = calls.find((c) => c.args[1].updates[0].values);
     assert(valueDelta, "expected a value delta to be sent");
-    assert.equal(valueDelta.args[1].updates[0].values[0].path, "electrical.switches.0.state");
+    assert.equal(
+      valueDelta.args[1].updates[0].values[0].path,
+      "electrical.switches.0.state",
+    );
   });
 
   it("clears resend interval and unregisters handler on close", () => {

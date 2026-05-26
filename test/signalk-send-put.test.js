@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import sinon from "sinon";
 import { createRED, createMockServer } from "./helpers/red-mock.js";
 import registerSendPut from "../signalk-send-put.js";
 

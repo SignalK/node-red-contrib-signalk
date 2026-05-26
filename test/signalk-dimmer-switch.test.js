@@ -35,7 +35,12 @@ describe("signalk-dimmer-switch", () => {
   it("PUT handler accepts a value in [0, 1] and returns COMPLETED/200", () => {
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.lights.cabin.dimmingLevel", 0.5, "cb");
+    const result = handler(
+      "vessels.self",
+      "electrical.lights.cabin.dimmingLevel",
+      0.5,
+      "cb",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 200);
@@ -44,7 +49,12 @@ describe("signalk-dimmer-switch", () => {
   it("PUT handler rejects value outside [0, 1] with COMPLETED/400", () => {
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.lights.cabin.dimmingLevel", 1.5, "cb");
+    const result = handler(
+      "vessels.self",
+      "electrical.lights.cabin.dimmingLevel",
+      1.5,
+      "cb",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 400);

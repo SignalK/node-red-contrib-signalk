@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import sinon from "sinon";
 import { createRED, createMockServer } from "./helpers/red-mock.js";
 import registerSubscribe from "../signalk-subscribe.js";
 
@@ -43,7 +42,7 @@ describe("signalk-subscribe", () => {
   });
 
   it("subscribes to the configured path when available fires", () => {
-    const node = makeNode({ path: "navigation.speedOverGround" });
+    makeNode({ path: "navigation.speedOverGround" });
     server.emit("available");
     assert.equal(server.subscribe.callCount, 1);
     const [ctx, path] = server.subscribe.getCall(0).args;
@@ -52,7 +51,10 @@ describe("signalk-subscribe", () => {
   });
 
   it("sends delta wrapped in payload on receiving update (sendAll mode)", () => {
-    const node = makeNode({ path: "navigation.speedOverGround", mode: "sendAll" });
+    const node = makeNode({
+      path: "navigation.speedOverGround",
+      mode: "sendAll",
+    });
     server.emit("available");
 
     const onDelta = server.subscribe.getCall(0).args[4];
@@ -75,14 +77,20 @@ describe("signalk-subscribe", () => {
   });
 
   it("does not send when value is unchanged in sendChanges mode", () => {
-    const node = makeNode({ path: "navigation.speedOverGround", mode: "sendChanges" });
+    const node = makeNode({
+      path: "navigation.speedOverGround",
+      mode: "sendChanges",
+    });
     server.emit("available");
     const onDelta = server.subscribe.getCall(0).args[4];
 
     const delta = {
       context: server.self,
       updates: [
-        { $source: "test", values: [{ path: "navigation.speedOverGround", value: 3.0 }] },
+        {
+          $source: "test",
+          values: [{ path: "navigation.speedOverGround", value: 3.0 }],
+        },
       ],
     };
 
@@ -94,13 +102,21 @@ describe("signalk-subscribe", () => {
   });
 
   it("ignores first value in sendChangesIgnore mode then sends on change", () => {
-    const node = makeNode({ path: "navigation.speedOverGround", mode: "sendChangesIgnore" });
+    const node = makeNode({
+      path: "navigation.speedOverGround",
+      mode: "sendChangesIgnore",
+    });
     server.emit("available");
     const onDelta = server.subscribe.getCall(0).args[4];
 
     const makeDelta = (val) => ({
       context: server.self,
-      updates: [{ $source: "test", values: [{ path: "navigation.speedOverGround", value: val }] }],
+      updates: [
+        {
+          $source: "test",
+          values: [{ path: "navigation.speedOverGround", value: val }],
+        },
+      ],
     });
 
     onDelta(makeDelta(3.0)); // first — ignored
@@ -147,17 +163,30 @@ describe("signalk-subscribe", () => {
   });
 
   it("filters by source when config.source is set", () => {
-    const node = makeNode({ path: "navigation.speedOverGround", source: "wanted.src" });
+    const node = makeNode({
+      path: "navigation.speedOverGround",
+      source: "wanted.src",
+    });
     server.emit("available");
     const onDelta = server.subscribe.getCall(0).args[4];
 
     const wrongSource = {
       context: server.self,
-      updates: [{ $source: "other.src", values: [{ path: "navigation.speedOverGround", value: 1.0 }] }],
+      updates: [
+        {
+          $source: "other.src",
+          values: [{ path: "navigation.speedOverGround", value: 1.0 }],
+        },
+      ],
     };
     const rightSource = {
       context: server.self,
-      updates: [{ $source: "wanted.src", values: [{ path: "navigation.speedOverGround", value: 2.0 }] }],
+      updates: [
+        {
+          $source: "wanted.src",
+          values: [{ path: "navigation.speedOverGround", value: 2.0 }],
+        },
+      ],
     };
 
     onDelta(wrongSource);

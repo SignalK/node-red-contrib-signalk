@@ -36,7 +36,12 @@ describe("signalk-slider-switch", () => {
   it("PUT handler accepts a value within range and returns COMPLETED/200", () => {
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.fans.cabin.state", 50, "cb");
+    const result = handler(
+      "vessels.self",
+      "electrical.fans.cabin.state",
+      50,
+      "cb",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 200);
@@ -46,7 +51,12 @@ describe("signalk-slider-switch", () => {
   it("PUT handler rejects a value outside the range with COMPLETED/400", () => {
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.fans.cabin.state", 150, "cb");
+    const result = handler(
+      "vessels.self",
+      "electrical.fans.cabin.state",
+      150,
+      "cb",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 400);
@@ -92,7 +102,9 @@ describe("signalk-slider-switch", () => {
   it("sends meta with rangeMin, rangeMax, and supportsPut on available", () => {
     server.emit("available");
 
-    const metaCall = server.handleMessage.getCalls().find((c) => c.args[1].updates[0].meta);
+    const metaCall = server.handleMessage
+      .getCalls()
+      .find((c) => c.args[1].updates[0].meta);
     assert(metaCall, "expected a meta delta");
     const metaValue = metaCall.args[1].updates[0].meta[0].value;
     assert.equal(metaValue.rangeMin, 0);
@@ -117,7 +129,9 @@ describe("signalk-slider-switch", () => {
     });
     freshServer.emit("available");
 
-    const metaCall = freshServer.handleMessage.getCalls().find((c) => c.args[1].updates[0].meta);
+    const metaCall = freshServer.handleMessage
+      .getCalls()
+      .find((c) => c.args[1].updates[0].meta);
     assert.equal(metaCall.args[1].updates[0].meta[0].value.stepSize, 1);
     n._trigger("close");
   });

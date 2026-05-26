@@ -43,7 +43,10 @@ describe("signalk-send-notification", () => {
     await Promise.resolve();
 
     const delta = server.handleMessage.getCall(0).args[1];
-    assert.equal(delta.updates[0].values[0].path, "notifications.engine.overheat");
+    assert.equal(
+      delta.updates[0].values[0].path,
+      "notifications.engine.overheat",
+    );
   });
 
   it("does not double-prefix paths that already start with 'notifications.'", async () => {
@@ -52,7 +55,10 @@ describe("signalk-send-notification", () => {
     await Promise.resolve();
 
     const delta = server.handleMessage.getCall(0).args[1];
-    assert.equal(delta.updates[0].values[0].path, "notifications.already.prefixed");
+    assert.equal(
+      delta.updates[0].values[0].path,
+      "notifications.already.prefixed",
+    );
   });
 
   it("overrides state and message from object payload", async () => {

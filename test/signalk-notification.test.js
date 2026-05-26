@@ -58,7 +58,10 @@ describe("signalk-notification", () => {
   });
 
   it("sends notification when state matches config.state", () => {
-    const node = makeNode({ notification: "notifications.alarm", state: "alarm" });
+    const node = makeNode({
+      notification: "notifications.alarm",
+      state: "alarm",
+    });
     server.emit("available");
     const onDelta = server.subscribe.getCall(0).args[4];
 
@@ -69,7 +72,10 @@ describe("signalk-notification", () => {
   });
 
   it("does not send when notification state does not match", () => {
-    const node = makeNode({ notification: "notifications.alarm", state: "alarm" });
+    const node = makeNode({
+      notification: "notifications.alarm",
+      state: "alarm",
+    });
     server.emit("available");
     const onDelta = server.subscribe.getCall(0).args[4];
 
@@ -79,7 +85,10 @@ describe("signalk-notification", () => {
   });
 
   it("sends notification for any state when config.state is 'any'", () => {
-    const node = makeNode({ notification: "notifications.alarm", state: "any" });
+    const node = makeNode({
+      notification: "notifications.alarm",
+      state: "any",
+    });
     server.emit("available");
     const onDelta = server.subscribe.getCall(0).args[4];
 

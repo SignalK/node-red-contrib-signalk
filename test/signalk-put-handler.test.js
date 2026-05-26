@@ -42,7 +42,12 @@ describe("signalk-put-handler", () => {
     setup({ pending: false });
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.switches.0.state", true, "cb-id");
+    const result = handler(
+      "vessels.self",
+      "electrical.switches.0.state",
+      true,
+      "cb-id",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 200);
@@ -52,7 +57,12 @@ describe("signalk-put-handler", () => {
     setup({ pending: true });
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.switches.0.state", true, "cb-id");
+    const result = handler(
+      "vessels.self",
+      "electrical.switches.0.state",
+      true,
+      "cb-id",
+    );
 
     assert.equal(result.state, "PENDING");
     assert.equal(result.statusCode, 202);

@@ -40,7 +40,9 @@ describe("signalk-multi-switch", () => {
   it("reports error when options array is empty", () => {
     clock.restore();
     clock = sinon.useFakeTimers();
-    const { RED, registeredTypes } = createRED({ "server-id": createMockServer() });
+    const { RED, registeredTypes } = createRED({
+      "server-id": createMockServer(),
+    });
     registerMultiSwitch(RED);
     const n = {};
     registeredTypes["signalk-multi-switch"].call(n, {
@@ -62,7 +64,12 @@ describe("signalk-multi-switch", () => {
   it("PUT handler accepts a valid option value and returns COMPLETED/200", () => {
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.switches.0.state", 1, "cb-id");
+    const result = handler(
+      "vessels.self",
+      "electrical.switches.0.state",
+      1,
+      "cb-id",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 200);
@@ -72,7 +79,12 @@ describe("signalk-multi-switch", () => {
   it("PUT handler rejects invalid value with COMPLETED/400", () => {
     const handler = server.registerPutHandler.getCall(0).args[2];
 
-    const result = handler("vessels.self", "electrical.switches.0.state", 99, "cb-id");
+    const result = handler(
+      "vessels.self",
+      "electrical.switches.0.state",
+      99,
+      "cb-id",
+    );
 
     assert.equal(result.state, "COMPLETED");
     assert.equal(result.statusCode, 400);
@@ -97,7 +109,9 @@ describe("signalk-multi-switch", () => {
   it("sends meta with possibleValues on available", () => {
     server.emit("available");
 
-    const metaCall = server.handleMessage.getCalls().find((c) => c.args[1].updates[0].meta);
+    const metaCall = server.handleMessage
+      .getCalls()
+      .find((c) => c.args[1].updates[0].meta);
     assert(metaCall, "expected a meta delta");
     const meta = metaCall.args[1].updates[0].meta[0];
     assert.equal(meta.value.type, "multiple");

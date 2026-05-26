@@ -36,10 +36,16 @@ describe("signalk-send-pathvalue", () => {
       path: "",
     });
 
-    n._trigger("input", { topic: "navigation.courseOverGroundTrue", payload: 1.0 });
+    n._trigger("input", {
+      topic: "navigation.courseOverGroundTrue",
+      payload: 1.0,
+    });
 
     const [, delta] = server.handleMessage.getCall(0).args;
-    assert.equal(delta.updates[0].values[0].path, "navigation.courseOverGroundTrue");
+    assert.equal(
+      delta.updates[0].values[0].path,
+      "navigation.courseOverGroundTrue",
+    );
   });
 
   it("reports error when neither config.path nor msg.topic is set", () => {
@@ -92,7 +98,9 @@ describe("signalk-send-pathvalue", () => {
     n._trigger("input", { payload: 1.0 }); // meta + value
     n._trigger("input", { payload: 2.0 }); // value only
 
-    const metaCalls = server.handleMessage.getCalls().filter((c) => c.args[1].updates[0].meta);
+    const metaCalls = server.handleMessage
+      .getCalls()
+      .filter((c) => c.args[1].updates[0].meta);
     assert.equal(metaCalls.length, 1);
   });
 

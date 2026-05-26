@@ -23,7 +23,10 @@ describe("signalk-get", () => {
     await Promise.resolve();
 
     assert.equal(server.getSelfPath.callCount, 1);
-    assert.equal(server.getSelfPath.getCall(0).args[0], "navigation.speedOverGround");
+    assert.equal(
+      server.getSelfPath.getCall(0).args[0],
+      "navigation.speedOverGround",
+    );
   });
 
   it("falls back to msg.topic when config.path is empty", async () => {
@@ -40,7 +43,10 @@ describe("signalk-get", () => {
     n._trigger("input", { topic: "navigation.courseOverGroundTrue" });
     await Promise.resolve();
 
-    assert.equal(server.getSelfPath.getCall(0).args[0], "navigation.courseOverGroundTrue");
+    assert.equal(
+      server.getSelfPath.getCall(0).args[0],
+      "navigation.courseOverGroundTrue",
+    );
   });
 
   it("sends value on port 0 when path is found", async () => {

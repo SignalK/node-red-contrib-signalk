@@ -90,7 +90,10 @@ describe("signalk-geofence", () => {
 
     // Move fence center to be far from OUTSIDE_POS so it becomes inside
     node._trigger("input", {
-      payload: { latitude: OUTSIDE_POS.latitude, longitude: OUTSIDE_POS.longitude },
+      payload: {
+        latitude: OUTSIDE_POS.latitude,
+        longitude: OUTSIDE_POS.longitude,
+      },
     });
 
     // Position is exactly at the new fence center — should be inside

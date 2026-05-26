@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import sinon from "sinon";
-import { createRED, createMockApp, createMockSignalK } from "./helpers/red-mock.js";
+import {
+  createRED,
+  createMockApp,
+  createMockSignalK,
+} from "./helpers/red-mock.js";
 import registerOnDelta from "../signalk-on-delta.js";
 
 describe("signalk-on-delta", () => {
@@ -41,7 +45,10 @@ describe("signalk-on-delta", () => {
     );
     registerOnDelta(RED);
     const node = {};
-    registeredTypes["signalk-on-delta"].call(node, { id: "n1", context: "vessels.self" });
+    registeredTypes["signalk-on-delta"].call(node, {
+      id: "n1",
+      context: "vessels.self",
+    });
 
     assert.equal(node.status.callCount, 1);
     assert.equal(node.status.getCall(0).args[0].fill, "red");
@@ -52,14 +59,20 @@ describe("signalk-on-delta", () => {
     const delta = {
       context: "vessels.self",
       updates: [
-        { $source: "other.src", values: [{ path: "navigation.speedOverGround", value: 3.0 }] },
+        {
+          $source: "other.src",
+          values: [{ path: "navigation.speedOverGround", value: 3.0 }],
+        },
       ],
     };
 
     signalk.emit("delta", delta);
 
     assert.equal(node.send.callCount, 1);
-    assert.deepEqual(node.send.getCall(0).args[0].payload.updates[0], delta.updates[0]);
+    assert.deepEqual(
+      node.send.getCall(0).args[0].payload.updates[0],
+      delta.updates[0],
+    );
   });
 
   it("accepts deltas whose context matches app.selfContext", () => {
@@ -67,7 +80,10 @@ describe("signalk-on-delta", () => {
     const delta = {
       context: SELF,
       updates: [
-        { $source: "other.src", values: [{ path: "navigation.speedOverGround", value: 3.0 }] },
+        {
+          $source: "other.src",
+          values: [{ path: "navigation.speedOverGround", value: 3.0 }],
+        },
       ],
     };
 
@@ -83,7 +99,10 @@ describe("signalk-on-delta", () => {
     const delta = {
       context: "vessels.self",
       updates: [
-        { $source: "signalk-node-red", values: [{ path: "some.path", value: 1 }] },
+        {
+          $source: "signalk-node-red",
+          values: [{ path: "some.path", value: 1 }],
+        },
       ],
     };
 
@@ -97,7 +116,10 @@ describe("signalk-on-delta", () => {
     const delta = {
       context: "vessels.other",
       updates: [
-        { $source: "src", values: [{ path: "navigation.speedOverGround", value: 1.0 }] },
+        {
+          $source: "src",
+          values: [{ path: "navigation.speedOverGround", value: 1.0 }],
+        },
       ],
     };
 

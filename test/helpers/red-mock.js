@@ -183,7 +183,13 @@ export function createRED(registeredNodes = {}, options = {}) {
 }
 
 /** Convenience: register a node module and instantiate a node in one call. */
-export function buildNode(registerFn, typeName, config, serverNodes = {}, options = {}) {
+export function buildNode(
+  registerFn,
+  typeName,
+  config,
+  serverNodes = {},
+  options = {},
+) {
   const { RED, registeredTypes } = createRED(serverNodes, options);
   registerFn(RED);
   const node = {};

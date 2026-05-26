@@ -11,7 +11,10 @@ describe("signalk-input-handler", () => {
   }
 
   function setup(plugin) {
-    const { RED, registeredTypes } = createRED({}, { globalContext: { plugin } });
+    const { RED, registeredTypes } = createRED(
+      {},
+      { globalContext: { plugin } },
+    );
     registerInputHandler(RED);
     const node = {};
     registeredTypes["signalk-input-handler"].call(node, {
@@ -32,7 +35,7 @@ describe("signalk-input-handler", () => {
 
   it("registers a delta input handler with the configured context and path", () => {
     const plugin = makeMockPlugin();
-    const { node } = setup(plugin);
+    setup(plugin);
 
     assert.equal(plugin.registerDeltaInputHandler.callCount, 1);
     const [ctx, path] = plugin.registerDeltaInputHandler.getCall(0).args;
@@ -55,7 +58,10 @@ describe("signalk-input-handler", () => {
     assert.equal(sentMsg.path, pv.path);
     assert.equal(sentMsg.next, nextStub);
     // flow context should also hold the next callback
-    assert.equal(node.context().flow.get("signalk-input-handler.next"), nextStub);
+    assert.equal(
+      node.context().flow.get("signalk-input-handler.next"),
+      nextStub,
+    );
   });
 
   it("calls the returned onClose function when the node closes", () => {
