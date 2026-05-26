@@ -5,10 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "prettier": "prettier --write .",
     "lint": "eslint --fix .",
     "ci-lint": "eslint . && prettier --check .",
+    "ci-test": "npm run test && npm run ci-lint",
     "format": "npm run prettier && npm run lint"
   },
   "author": "Scott Bender",
@@ -60,6 +61,8 @@
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^16.4.0",
-    "prettier": "^3.6.2"
+    "mocha": "^11.0.0",
+    "prettier": "^3.6.2",
+    "sinon": "^20.0.0"
   }
 }
