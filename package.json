@@ -13,7 +13,8 @@
     "lint": "eslint --fix .",
     "ci-lint": "eslint . && prettier --check .",
     "ci-test": "npm run build && npm run test && npm run ci-lint",
-    "format": "npm run prettier && npm run lint"
+    "format": "npm run prettier && npm run lint",
+    "watch": "npm run build -- -w"
   },
   "author": "Scott Bender",
   "license": "Apache-2.0",
@@ -61,6 +62,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@signalk/server-api": "^2.25.0",
     "@types/node": "^25.9.1",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",

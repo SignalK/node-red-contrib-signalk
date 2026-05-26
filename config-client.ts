@@ -1,11 +1,52 @@
 import { Client } from "@signalk/client";
+import { ServerAPI, SubscriptionManager, Delta } from "@signalk/server-api";
 import { v4 as uuidv4 } from "uuid";
 import coreDebug from "debug";
+
+export interface PutResponse {
+  state: "COMPLETED" | "PENDING";
+  statusCode: number;
+  message?: string;
+  requestId?: string;
+}
+
+export type PutHandler = (
+  context: string,
+  path: string,
+  value: any,
+  cbInfo: any,
+) => { state: string; statusCode: number; message?: string };
+
+export interface SignalKServer {
+  self: string;
+  onError(node: any, err: any): void;
+  handleMessage(node: any, delta: Delta, source?: string): Promise<boolean>;
+  on(event: string, handler: (...args: any[]) => void): void;
+  removeListener(event: string, handler: (...args: any[]) => void): void;
+  registerPutHandler(node: any, path: string, handler: PutHandler): void;
+  unRegisterPutHandler(node: any, path: string): void;
+  subscribe(
+    context: string,
+    path: string,
+    period: number | undefined,
+    onStop: Array<() => void>,
+    cb: (delta: Delta) => void,
+  ): void;
+  putSelfPath(
+    node: any,
+    path: string,
+    value: any,
+    cb: (reply: any) => void,
+    source?: string,
+  ): void;
+  sendPutResponse(node: any, msg: any, resp: PutResponse): Promise<boolean>;
+  getSelfPath(path: string): Promise<any>;
+}
 
 const embeddedClientId = "sk-embeded-id";
 let createEmbeddedClient;
 
-export function getServer(RED, node) {
+export function getServer(RED, node): SignalKServer | null {
   let server = RED.nodes.getNode(node.server);
   if (!server) {
     if (node.context().global.get("isSKEmbedded")) {
@@ -85,8 +126,10 @@ export default function (RED) {
     const originalRemoveListener = this.removeListener.bind(this);
 
     if (config.isEmbedded) {
-      const app = this.context().global.get("app");
-      const smanager = this.context().global.get("subscriptionmanager");
+      const app: ServerAPI = this.context().global.get("app");
+      const smanager: SubscriptionManager = this.context().global.get(
+        "subscriptionmanager",
+      );
 
       this.self = app.selfContext;
 
@@ -95,7 +138,7 @@ export default function (RED) {
         node.status({ fill: "red", shape: "dot", text: err.message });
       };
 
-      this.handleMessage = (node, delta, source) => {
+      this.handleMessage = (node, delta: Delta, source) => {
         app.handleMessage(source || "signalk-node-red", delta);
         return Promise.resolve(true);
       };
@@ -150,7 +193,7 @@ export default function (RED) {
       };
 
       this.putSelfPath = (node, path, value, cb, source) => {
-        const resp = app.putSelfPath(
+        const resp = (app as any).putSelfPath(
           path,
           value,
           (reply) => {
