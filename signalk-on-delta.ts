@@ -1,10 +1,10 @@
 export default function (RED) {
   function SignalKOnDelta(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
-    var signalk = node.context().global.get("signalk");
-    var app = node.context().global.get("app");
+    const signalk = node.context().global.get("signalk");
+    const app = node.context().global.get("app");
     if (!app) {
       node.status({
         fill: "red",
@@ -34,7 +34,7 @@ export default function (RED) {
             delta.context == app.selfContext)
         ) {
           if (typeof config.flatten === "undefined" || !config.flatten) {
-            var copy = JSON.parse(JSON.stringify(delta));
+            const copy = JSON.parse(JSON.stringify(delta));
             copy.updates = [];
             delta.updates.forEach((update) => {
               if (

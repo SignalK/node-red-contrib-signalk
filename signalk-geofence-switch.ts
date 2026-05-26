@@ -31,7 +31,7 @@ export default function (RED) {
       }
     };
 
-    let onStop = [];
+    const onStop = [];
 
     const onAvailable = () => {
       debug(

@@ -1,9 +1,9 @@
 export default function (RED) {
   function SignalK(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
-    var app = node.context().global.get("app");
+    const app = node.context().global.get("app");
     if (!app) {
       node.status({
         fill: "red",
@@ -19,7 +19,7 @@ export default function (RED) {
         next = msg.next;
       }
       if (msg.topic) {
-        let delta = {
+        const delta = {
           context: msg.context,
           updates: [
             {
@@ -35,16 +35,7 @@ export default function (RED) {
             },
           ],
         };
-        /*
-        if ( msg.source && msg.source.length > 0 ) {
-          delta.updates[0].$source = msg.source
-        }
-        */
-        //node.error(JSON.stringify(delta))
-        //console.log(JSON.stringify(delta))
         next(delta);
-      } else {
-        //next(msg.payload)
       }
     });
   }

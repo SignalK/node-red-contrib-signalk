@@ -6,7 +6,7 @@ const debug = coreDebug("node-red-contrib-signalk:signalk-geofence");
 export default function (RED) {
   function signalk(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
     const server = getServer(RED, node);
 
@@ -36,7 +36,6 @@ export default function (RED) {
 
       if (config.myposition && delta.context === "vessels." + server.self) {
         node.myposition = pos.value;
-        //debug('updated self position', node.myposition)
         if (config.context !== "vessels.self") {
           return;
         }
@@ -44,9 +43,9 @@ export default function (RED) {
 
       pos = pos.value;
 
-      var fencePos = null;
+      let fencePos = null;
       if (config.myposition) {
-        var mypos = node.myposition;
+        const mypos = node.myposition;
         if (mypos && mypos.latitude && mypos.longitude) {
           fencePos = { lat: mypos.latitude, lon: mypos.longitude };
         }
@@ -64,7 +63,7 @@ export default function (RED) {
       debug("position update", pos, "fence position", fencePos);
 
       if (fencePos) {
-        let dist = geodist(
+        const dist = geodist(
           fencePos,
           { lat: pos.latitude, lon: pos.longitude },
           { unit: "meters" },
@@ -80,9 +79,8 @@ export default function (RED) {
           payload = [{ payload: "inside" }, null, { payload: "inside" }];
         }
 
-        let last = node.context().get("lastValue");
-        let current = payload[2].payload;
-        //console.log(`${last} ${current} ${config.mode}`)
+        const last = node.context().get("lastValue");
+        const current = payload[2].payload;
         if (!last && config.mode === "sendChangesIgnore") {
           node.context().set("lastValue", current);
           return;
@@ -99,7 +97,7 @@ export default function (RED) {
       }
     };
 
-    let onStop = [];
+    const onStop = [];
 
     const onAvailable = () => {
       debug(

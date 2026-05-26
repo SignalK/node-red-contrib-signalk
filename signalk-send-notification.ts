@@ -5,7 +5,7 @@ const debug = coreDebug("node-red-contrib-signalk:signalk-send-notification");
 export default function (RED) {
   function signalKSendNotification(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
     const server = getServer(RED, node);
 
@@ -27,10 +27,10 @@ export default function (RED) {
 
     node.on("input", (msg) => {
       try {
-        let info = typeof msg.payload === "object" ? msg.payload : null;
+        const info = typeof msg.payload === "object" ? msg.payload : null;
         let path = info && info.path ? info.path : config.path;
-        let state = info && info.state ? info.state : config.state;
-        let message = info && info.message ? info.message : config.message;
+        const state = info && info.state ? info.state : config.state;
+        const message = info && info.message ? info.message : config.message;
         let source = info && info.$source ? info.$source : config.source;
         let method;
         if (info && info.method) {
@@ -53,7 +53,7 @@ export default function (RED) {
           path = "notifications." + path;
         }
 
-        let delta = {
+        const delta = {
           updates: [
             {
               $source: source,

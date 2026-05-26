@@ -69,7 +69,7 @@ export default function (RED) {
       server.handleMessage(node, delta);
     }
 
-    function publishMeta(path, displayName, units) {
+    function publishMeta(path, displayName, units?) {
       if (!displayName || displayName.length === 0) {
         return;
       }
@@ -89,7 +89,7 @@ export default function (RED) {
       server.handleMessage(node, delta);
     }
 
-    function updateStatus(dimmingLevel, state) {
+    function updateStatus(dimmingLevel, state?) {
       const stateText = includeState ? `, state: ${state}` : "";
       node.status({
         fill: "green",
@@ -109,7 +109,7 @@ export default function (RED) {
     function sendOutputWithCbInfo(dimmingLevel, state, cbInfo) {
       let dimmingObj = null;
       let stateObj = null;
-      let object = { topic: basePath, payload: {} };
+      let object: any = { topic: basePath, payload: {} };
 
       if (state !== null) {
         stateObj = {
@@ -141,7 +141,7 @@ export default function (RED) {
     function sendOutput(dimmingLevel, state) {
       let dimmingObj = null;
       let stateObj = null;
-      let object = { topic: basePath, payload: {} };
+      const object: any = { topic: basePath, payload: {} };
 
       if (state !== null) {
         stateObj = {

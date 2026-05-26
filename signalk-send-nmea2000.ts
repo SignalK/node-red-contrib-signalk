@@ -1,9 +1,9 @@
 export default function (RED) {
   function send(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
-    let app = node.context().global.get("app");
+    const app = node.context().global.get("app");
     if (!app) {
       node.status({
         fill: "red",
@@ -13,7 +13,7 @@ export default function (RED) {
       return;
     }
 
-    let _ = node.context().global.get("lodash");
+    const _ = node.context().global.get("lodash");
 
     let showingStatus = false;
     function showStatus() {

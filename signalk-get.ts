@@ -3,7 +3,7 @@ import { getServer } from "./config-client.js";
 export default function (RED) {
   function signalKGet(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
     const server = getServer(RED, node);
     if (!server) {

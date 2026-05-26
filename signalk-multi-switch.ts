@@ -94,7 +94,7 @@ export default function (RED) {
     }
 
     function sendUpdate(value) {
-      let delta = {
+      const delta = {
         updates: [
           {
             values: [
@@ -106,7 +106,6 @@ export default function (RED) {
           },
         ],
       };
-      //debug('sending delta %j', delta)
       server.handleMessage(node, delta);
     }
 
@@ -114,9 +113,9 @@ export default function (RED) {
 
     const onConnect = () => {
       globalContext.get(path, storeName, (err, value) => {
-        let possibleValues = config.options;
+        const possibleValues = config.options;
 
-        let delta = {
+        const delta = {
           updates: [
             {
               meta: [

@@ -51,7 +51,7 @@ export default function (RED) {
     }
 
     function sendUpdate(value) {
-      let delta = {
+      const delta = {
         updates: [
           {
             values: [
@@ -63,7 +63,6 @@ export default function (RED) {
           },
         ],
       };
-      //debug('sending delta %j', delta)
       server.handleMessage(node, delta);
     }
 
@@ -80,7 +79,7 @@ export default function (RED) {
           });
           return;
         }
-        let delta = {
+        const delta = {
           updates: [
             {
               meta: [

@@ -78,8 +78,6 @@ function deltaMatchesSubscription(delta, context, path, selfId) {
 }
 
 export default function (RED) {
-  "use strict";
-
   function ConfigSignalKClient(config) {
     RED.nodes.createNode(this, config);
 
@@ -129,7 +127,7 @@ export default function (RED) {
       this.unRegisterPutHandler = (_node, _path) => {};
 
       this.subscribe = (context, path, period, onStop, cb) => {
-        let subscription = {
+        const subscription = {
           context: context,
           subscribe: [
             {
@@ -152,7 +150,7 @@ export default function (RED) {
       };
 
       this.putSelfPath = (node, path, value, cb, source) => {
-        let resp = app.putSelfPath(
+        const resp = app.putSelfPath(
           path,
           value,
           (reply) => {
@@ -285,13 +283,12 @@ export default function (RED) {
                   );
                   if (handler) {
                     debug("received put %j", msg);
-                    let result = handler.func(
+                    const result = handler.func(
                       config.context,
                       pv.path,
                       pv.value,
                       msg.requestId,
                     );
-                    //                const resp = { requestId: msg.requestId, ...result }
                     result.requestId = msg.requestId;
                     debug("sending response %j %j", result, msg.requestId);
                     this.send(handler.node, result);
@@ -321,18 +318,14 @@ export default function (RED) {
       };
 
       this.subscribe = (context, path, period, onStop, cb) => {
+        const subscribeItem: any = { path };
+        if (period !== undefined) {
+          subscribeItem.period = period;
+        }
         const subscription = {
           context,
-          subscribe: [
-            {
-              path,
-            },
-          ],
+          subscribe: [subscribeItem],
         };
-
-        if (period !== undefined) {
-          subscription.subscribe[0].period = period;
-        }
 
         const onDelta = (delta) => {
           if (deltaMatchesSubscription(delta, context, path, this.self)) {
@@ -407,7 +400,7 @@ export default function (RED) {
       this.getSelfPath = (path) => {
         return new Promise((resolve, _reject) => {
           this.client
-            .API() // create REST API client
+            .API()
             .then((api) => api.get("/vessels/self/" + path))
             .then(resolve)
             .catch((err) => {

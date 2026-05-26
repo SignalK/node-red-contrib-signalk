@@ -1,9 +1,9 @@
 export default function (RED) {
   function SignalK(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
-    var plugin = node.context().global.get("plugin");
+    const plugin = node.context().global.get("plugin");
     if (!plugin) {
       node.status({
         fill: "red",
@@ -13,7 +13,7 @@ export default function (RED) {
       return;
     }
 
-    let onClose = plugin.registerDeltaInputHandler(
+    const onClose = plugin.registerDeltaInputHandler(
       config.context,
       config.path,
       config.source,

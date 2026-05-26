@@ -53,7 +53,7 @@ export default function (RED) {
     }
 
     function publishMeta() {
-      const metaValue = {
+      const metaValue: any = {
         rangeMin,
         rangeMax,
         supportsPut: true,

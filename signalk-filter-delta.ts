@@ -1,10 +1,10 @@
 export default function (RED) {
   function signalKFilterDelta(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
     node.on("input", (msg) => {
-      let delta = msg.payload;
+      const delta = msg.payload;
       if (delta.updates) {
         delta.updates.forEach((update) => {
           if (
@@ -14,7 +14,7 @@ export default function (RED) {
             if (update.values) {
               update.values.forEach((pathValue) => {
                 if (pathValue.path == config.path) {
-                  let copy = JSON.parse(JSON.stringify(pathValue));
+                  const copy = JSON.parse(JSON.stringify(pathValue));
                   copy.$source = update.$source;
                   copy.source = update.source;
                   node.send({ payload: copy });

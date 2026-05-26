@@ -1,9 +1,9 @@
 export default function (RED) {
   function send(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
-    let app = node.context().global.get("app");
+    const app = node.context().global.get("app");
     if (!app) {
       node.status({
         fill: "red",

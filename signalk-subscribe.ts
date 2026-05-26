@@ -6,7 +6,7 @@ const debug = coreDebug("node-red-contrib-signalk:signalk-subscribe");
 export default function (RED) {
   function input(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
     if (!config.path || config.path.length == 0) {
       node.error("no path specified");
@@ -20,7 +20,7 @@ export default function (RED) {
     }
 
     let showingStatus = false;
-    function showStatus(value, title) {
+    function showStatus(value, title?) {
       if (!showingStatus) {
         if (!title) {
           title = "sending";
@@ -45,7 +45,7 @@ export default function (RED) {
       if (delta.updates) {
         try {
           if (typeof config.flatten === "undefined" || !config.flatten) {
-            var copy = JSON.parse(JSON.stringify(delta));
+            const copy = JSON.parse(JSON.stringify(delta));
             copy.updates = [];
             delta.updates.forEach((update) => {
               if (
@@ -53,8 +53,8 @@ export default function (RED) {
                 update.values.length > 0 &&
                 (!config.source || update.$source == config.source)
               ) {
-                let last = node.context()[update.values[0].path];
-                let current = update.values[0].value;
+                const last = node.context()[update.values[0].path];
+                const current = update.values[0].value;
                 if (
                   typeof last === "undefined" &&
                   config.mode === "sendChangesIgnore"
@@ -93,8 +93,8 @@ export default function (RED) {
                   if (pathValue.path !== config.path) {
                     return;
                   }
-                  let last = node.context()[pathValue.path];
-                  let current = pathValue.value;
+                  const last = node.context()[pathValue.path];
+                  const current = pathValue.value;
                   if (
                     typeof last === "undefined" &&
                     config.mode === "sendChangesIgnore"
@@ -109,7 +109,6 @@ export default function (RED) {
                     !isDeepStrictEqual(last, current)
                   ) {
                     showStatus(pathValue.value);
-                    //debug('sending update for path %s with value %o', pathValue.path, pathValue.value)
                     node.context()[pathValue.path] = current;
                     node.send({
                       $source: update.$source,

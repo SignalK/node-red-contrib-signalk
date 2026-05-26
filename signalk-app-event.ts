@@ -1,9 +1,9 @@
 export default function (RED) {
   function SignalKOnEvent(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
-    var app = node.context().global.get("app");
+    const app = node.context().global.get("app");
     if (!app) {
       node.status({
         fill: "red",

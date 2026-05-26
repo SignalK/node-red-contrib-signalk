@@ -5,9 +5,9 @@ const debug = coreDebug("node-red-contrib-signalk:signalk-send-pathvalue");
 export default function (RED) {
   function signalKSendPathValue(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
+    const node = this;
 
-    var sentMeta = {};
+    const sentMeta = {};
 
     this.server = getServer(RED, node);
 
@@ -33,7 +33,7 @@ export default function (RED) {
           config.meta !== "" &&
           !sentMeta[path]
         ) {
-          let delta = {
+          const delta = {
             updates: [
               {
                 meta: [
@@ -55,7 +55,7 @@ export default function (RED) {
           sentMeta[path] = true;
         }
 
-        let delta = {
+        const delta = {
           updates: [
             {
               values: [
@@ -68,10 +68,9 @@ export default function (RED) {
           ],
         };
         if (config.source && config.source.length > 0) {
-          delta.updates[0].$source = config.source;
+          delta.updates[0]["$source"] = config.source;
         }
-        let c = path.lastIndexOf(".");
-        //debug('sending delta for path %s with value %j', path, delta)
+        const c = path.lastIndexOf(".");
         this.server.handleMessage(node, delta, config.source);
         showStatus(`${path.substring(c + 1)}: ${msg.payload}`);
       } catch (err) {
