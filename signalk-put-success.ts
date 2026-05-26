@@ -1,23 +1,23 @@
-import { getServer } from "./config-client.js";
+import { getServer } from './config-client.js'
 
 export default function (RED) {
   function SignalK(config) {
-    RED.nodes.createNode(this, config);
-    const node = this;
+    RED.nodes.createNode(this, config)
+    const node = this
 
-    const server = getServer(RED, node);
+    const server = getServer(RED, node)
 
     if (!server) {
-      return;
+      return
     }
 
-    node.on("input", (msg) => {
+    node.on('input', (msg) => {
       server.sendPutResponse(node, msg, {
-        state: "COMPLETED",
+        state: 'COMPLETED',
         statusCode: msg.statusCode || 200,
-        message: msg.message,
-      });
-    });
+        message: msg.message
+      })
+    })
   }
-  RED.nodes.registerType("signalk-put-success", SignalK);
+  RED.nodes.registerType('signalk-put-success', SignalK)
 }

@@ -1,50 +1,50 @@
-import js from "@eslint/js";
-import globals from "globals";
-import prettier from "eslint-config-prettier/flat";
-import tseslint from "typescript-eslint";
+import js from '@eslint/js'
+import globals from 'globals'
+import prettier from 'eslint-config-prettier/flat'
+import tseslint from 'typescript-eslint'
 
 const unusedVarsRule = [
-  "error",
+  'error',
   {
-    argsIgnorePattern: "^_",
-    varsIgnorePattern: "^(?:_|debug)$",
-    caughtErrorsIgnorePattern: "^_",
-  },
-];
+    argsIgnorePattern: '^_',
+    varsIgnorePattern: '^(?:_|debug)$',
+    caughtErrorsIgnorePattern: '^_'
+  }
+]
 
 export default tseslint.config(
-  { ignores: ["node_modules/**", "dist/**"] },
+  { ignores: ['node_modules/**', 'dist/**'] },
   {
-    files: ["**/*.js"],
+    files: ['**/*.js'],
     ...js.configs.recommended,
     languageOptions: {
       ...js.configs.recommended.languageOptions,
-      sourceType: "module",
+      sourceType: 'module',
       globals: {
         ...globals.node,
-        ...globals.browser,
-      },
+        ...globals.browser
+      }
     },
     rules: {
       ...js.configs.recommended.rules,
-      "no-unused-vars": unusedVarsRule,
-      "no-undef": "off",
-    },
+      'no-unused-vars': unusedVarsRule,
+      'no-undef': 'off'
+    }
   },
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
     extends: [tseslint.configs.recommended],
     languageOptions: {
       globals: {
-        ...globals.node,
-      },
+        ...globals.node
+      }
     },
     rules: {
-      "@typescript-eslint/no-unused-vars": unusedVarsRule,
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "@typescript-eslint/no-this-alias": "off",
-    },
+      '@typescript-eslint/no-unused-vars': unusedVarsRule,
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-this-alias': 'off'
+    }
   },
-  prettier,
-);
+  prettier
+)

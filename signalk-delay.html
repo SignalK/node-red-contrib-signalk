@@ -1,19 +1,19 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-delay", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-delay', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      delay: { value: 5000 },
+      name: { value: '' },
+      delay: { value: 5000 }
     },
     inputs: 1,
     outputs: 1,
-    icon: "function.png",
+    icon: 'function.png',
     label: function () {
-      return this.name || "signalk-delay";
+      return this.name || 'signalk-delay'
     },
-    paletteLabel: "delay",
-  });
+    paletteLabel: 'delay'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-delay">

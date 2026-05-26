@@ -1,21 +1,21 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-send-nmea2000", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-send-nmea2000', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      nmea2000Event: { value: "nmea2000out" },
-      nmea2000JsonEvent: { value: "nmea2000JsonOut" },
+      name: { value: '' },
+      nmea2000Event: { value: 'nmea2000out' },
+      nmea2000JsonEvent: { value: 'nmea2000JsonOut' }
     },
     inputs: 1,
     outputs: 0,
-    icon: "bridge.png",
-    align: "right",
+    icon: 'bridge.png',
+    align: 'right',
     label: function () {
-      return this.name || "signalk-send-nmea2000";
+      return this.name || 'signalk-send-nmea2000'
     },
-    paletteLabel: "send NMEA2000",
-  });
+    paletteLabel: 'send NMEA2000'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-send-nmea2000">

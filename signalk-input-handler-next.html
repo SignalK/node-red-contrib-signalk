@@ -1,19 +1,19 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-input-handler-next", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-input-handler-next', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
+      name: { value: '' }
     },
     inputs: 1,
     outputs: 0,
-    icon: "bridge.png",
-    align: "right",
+    icon: 'bridge.png',
+    align: 'right',
     label: function () {
-      return this.name || "signalk-input-handler-next";
+      return this.name || 'signalk-input-handler-next'
     },
-    paletteLabel: "input handler next",
-  });
+    paletteLabel: 'input handler next'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-input-handler-next">

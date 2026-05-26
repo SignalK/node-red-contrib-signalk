@@ -1,40 +1,40 @@
 export default function (RED) {
   function send(config) {
-    RED.nodes.createNode(this, config);
-    const node = this;
+    RED.nodes.createNode(this, config)
+    const node = this
 
-    const app = node.context().global.get("app");
+    const app = node.context().global.get('app')
     if (!app) {
       node.status({
-        fill: "red",
-        shape: "dot",
-        text: "this node only works embedded",
-      });
-      return;
+        fill: 'red',
+        shape: 'dot',
+        text: 'this node only works embedded'
+      })
+      return
     }
 
-    const _ = node.context().global.get("lodash");
+    const _ = node.context().global.get('lodash')
 
-    let showingStatus = false;
+    let showingStatus = false
     function showStatus() {
       if (!showingStatus) {
-        node.status({ fill: "green", shape: "dot", text: "sending" });
-        showingStatus = true;
+        node.status({ fill: 'green', shape: 'dot', text: 'sending' })
+        showingStatus = true
         setTimeout(() => {
-          node.status({});
-          showingStatus = false;
-        }, 1000);
+          node.status({})
+          showingStatus = false
+        }, 1000)
       }
     }
 
-    node.on("input", (msg) => {
-      showStatus();
+    node.on('input', (msg) => {
+      showStatus()
       if (_.isObject(msg.payload)) {
-        app.emit(config.nmea2000JsonEvent, msg.payload);
+        app.emit(config.nmea2000JsonEvent, msg.payload)
       } else {
-        app.emit(config.nmea2000Event, msg.payload);
+        app.emit(config.nmea2000Event, msg.payload)
       }
-    });
+    })
   }
-  RED.nodes.registerType("signalk-send-nmea2000", send);
+  RED.nodes.registerType('signalk-send-nmea2000', send)
 }

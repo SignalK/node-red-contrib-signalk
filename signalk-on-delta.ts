@@ -1,28 +1,28 @@
 export default function (RED) {
   function SignalKOnDelta(config) {
-    RED.nodes.createNode(this, config);
-    const node = this;
+    RED.nodes.createNode(this, config)
+    const node = this
 
-    const signalk = node.context().global.get("signalk");
-    const app = node.context().global.get("app");
+    const signalk = node.context().global.get('signalk')
+    const app = node.context().global.get('app')
     if (!app) {
       node.status({
-        fill: "red",
-        shape: "dot",
-        text: "this node only works embedded",
-      });
-      return;
+        fill: 'red',
+        shape: 'dot',
+        text: 'this node only works embedded'
+      })
+      return
     }
 
-    let showingStatus = false;
+    let showingStatus = false
     function showStatus() {
       if (!showingStatus) {
-        node.status({ fill: "green", shape: "dot", text: "sending" });
-        showingStatus = true;
+        node.status({ fill: 'green', shape: 'dot', text: 'sending' })
+        showingStatus = true
         setTimeout(() => {
-          node.status({});
-          showingStatus = false;
-        }, 1000);
+          node.status({})
+          showingStatus = false
+        }, 1000)
       }
     }
 
@@ -30,61 +30,61 @@ export default function (RED) {
       if (delta.updates) {
         if (
           delta.context === config.context ||
-          (config.context === "vessels.self" &&
+          (config.context === 'vessels.self' &&
             delta.context == app.selfContext)
         ) {
-          if (typeof config.flatten === "undefined" || !config.flatten) {
-            const copy = JSON.parse(JSON.stringify(delta));
-            copy.updates = [];
+          if (typeof config.flatten === 'undefined' || !config.flatten) {
+            const copy = JSON.parse(JSON.stringify(delta))
+            copy.updates = []
             delta.updates.forEach((update) => {
               if (
                 update.values &&
                 (!update.$source ||
-                  !update.$source.startsWith("signalk-node-red"))
+                  !update.$source.startsWith('signalk-node-red'))
               ) {
-                copy.updates.push(update);
+                copy.updates.push(update)
               }
-            });
+            })
 
             if (copy.updates.length > 0) {
-              showStatus();
+              showStatus()
               if (copy.context == app.selfContext) {
-                copy.context = "vessels.self";
+                copy.context = 'vessels.self'
               }
-              node.send({ payload: copy });
+              node.send({ payload: copy })
             }
           } else {
             delta.updates.forEach((update) => {
               if (
                 update.values &&
                 (!update.$source ||
-                  !update.$source.startsWith("signalk-node-red"))
+                  !update.$source.startsWith('signalk-node-red'))
               ) {
-                showStatus();
+                showStatus()
                 update.values.forEach((pathValue) => {
                   node.send({
                     $source: update.$source,
                     source: update.source,
                     context:
                       delta.context == app.selfContext
-                        ? "vessels.self"
+                        ? 'vessels.self'
                         : delta.context,
                     payload: pathValue.value,
-                    topic: pathValue.path,
-                  });
-                });
+                    topic: pathValue.path
+                  })
+                })
               }
-            });
+            })
           }
         }
       }
     }
 
-    signalk.on("delta", on_delta);
+    signalk.on('delta', on_delta)
 
-    node.on("close", function () {
-      signalk.removeListener("delta", on_delta);
-    });
+    node.on('close', function () {
+      signalk.removeListener('delta', on_delta)
+    })
   }
-  RED.nodes.registerType("signalk-on-delta", SignalKOnDelta);
+  RED.nodes.registerType('signalk-on-delta', SignalKOnDelta)
 }

@@ -1,18 +1,18 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-flatten-delta", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-flatten-delta', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
+      name: { value: '' }
     },
     inputs: 1,
     outputs: 1,
-    icon: "function.png",
+    icon: 'function.png',
     label: function () {
-      return this.name || "signalk-flatten-delta";
+      return this.name || 'signalk-flatten-delta'
     },
-    paletteLabel: "flatten delta",
-  });
+    paletteLabel: 'flatten delta'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-flatten-delta">

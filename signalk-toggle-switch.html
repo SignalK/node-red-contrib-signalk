@@ -1,24 +1,24 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-toggle-switch", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-toggle-switch', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      path: { value: "", required: true },
+      name: { value: '' },
+      path: { value: '', required: true },
       pending: { value: false },
-      displayName: { value: "" },
-      server: { value: "", type: "signalk-client", required: true },
+      displayName: { value: '' },
+      server: { value: '', type: 'signalk-client', required: true }
     },
     inputs: 1,
     outputs: 1,
-    outputLabels: ["state"],
-    inputLabels: ["state"],
-    icon: "bridge.png",
+    outputLabels: ['state'],
+    inputLabels: ['state'],
+    icon: 'bridge.png',
     label: function () {
-      return this.name || "signalk-toggle-switch";
+      return this.name || 'signalk-toggle-switch'
     },
-    paletteLabel: "toggle switch",
-  });
+    paletteLabel: 'toggle switch'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-toggle-switch">

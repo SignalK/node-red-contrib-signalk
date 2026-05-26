@@ -1,25 +1,25 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-geofence-switch", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-geofence-switch', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      context: { value: "vessels.self" },
+      name: { value: '' },
+      context: { value: 'vessels.self' },
       myposition: { value: false },
       lat: { value: 0 },
       lon: { value: 0 },
       distance: { value: 10 },
-      server: { value: "", type: "signalk-client", required: true },
+      server: { value: '', type: 'signalk-client', required: true }
     },
     inputs: 1,
     outputs: 2,
-    outputLabels: ["inside fence", "outside fence"],
-    icon: "function.png",
+    outputLabels: ['inside fence', 'outside fence'],
+    icon: 'function.png',
     label: function () {
-      return this.name || "signalk-geofence-switch";
+      return this.name || 'signalk-geofence-switch'
     },
-    paletteLabel: "geofence switch",
-  });
+    paletteLabel: 'geofence switch'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-geofence-switch">

@@ -37,114 +37,114 @@
 </script>
 
 <script type="text/javascript">
-  "use strict";
+  'use strict'
 
-  const embeddedClientId = "sk-embeded-id";
+  const embeddedClientId = 'sk-embeded-id'
 
   function isEmbeddedSignalKEditor() {
     const nodeRoot =
-      RED.settings && typeof RED.settings.httpNodeRoot === "string"
+      RED.settings && typeof RED.settings.httpNodeRoot === 'string'
         ? RED.settings.httpNodeRoot
-        : "";
+        : ''
     if (
-      nodeRoot === "/redApi" ||
-      nodeRoot.indexOf("/plugins/signalk-node-red/redApi") === 0
+      nodeRoot === '/redApi' ||
+      nodeRoot.indexOf('/plugins/signalk-node-red/redApi') === 0
     ) {
-      return true;
+      return true
     }
 
     const path =
-      typeof window !== "undefined" &&
+      typeof window !== 'undefined' &&
       window.location &&
-      typeof window.location.pathname === "string"
+      typeof window.location.pathname === 'string'
         ? window.location.pathname
-        : "";
+        : ''
     return (
-      path.indexOf("/plugins/signalk-node-red/") !== -1 ||
-      path.indexOf("/redAdmin") === 0
-    );
+      path.indexOf('/plugins/signalk-node-red/') !== -1 ||
+      path.indexOf('/redAdmin') === 0
+    )
   }
 
   function ensureEmbeddedSignalKClient() {
     if (!isEmbeddedSignalKEditor()) {
-      return;
+      return
     }
-    console.log("Ensuring embedded Signal K client exists");
+    console.log('Ensuring embedded Signal K client exists')
 
-    let hasClient = false;
+    let hasClient = false
 
     RED.nodes.eachConfig(function (n) {
       if (n.id === embeddedClientId) {
-        hasClient = true;
+        hasClient = true
       }
-    });
+    })
 
     if (hasClient) {
-      return;
+      return
     }
 
-    const clientType = RED.nodes.getType("signalk-client");
+    const clientType = RED.nodes.getType('signalk-client')
     if (!clientType) {
-      return;
+      return
     }
 
     RED.nodes.add({
       id: embeddedClientId,
       _def: clientType,
-      type: "signalk-client",
+      type: 'signalk-client',
       users: [],
       valid: true,
-      isEmbedded: true,
-    });
-    RED.nodes.dirty(true);
+      isEmbedded: true
+    })
+    RED.nodes.dirty(true)
   }
 
   function assignEmbeddedClientIfMissing(node) {
     if (!node || node.server) {
-      return false;
+      return false
     }
 
-    node.server = embeddedClientId;
-    return true;
+    node.server = embeddedClientId
+    return true
   }
 
-  RED.events.on("nodes:add", function (node) {
+  RED.events.on('nodes:add', function (node) {
     if (
       node &&
-      typeof node.type === "string" &&
-      node.type.startsWith("signalk-") &&
-      node.type !== "signalk-client"
+      typeof node.type === 'string' &&
+      node.type.startsWith('signalk-') &&
+      node.type !== 'signalk-client'
     ) {
-      ensureEmbeddedSignalKClient();
+      ensureEmbeddedSignalKClient()
       if (assignEmbeddedClientIfMissing(node)) {
-        RED.nodes.dirty(true);
+        RED.nodes.dirty(true)
       }
     }
-  });
+  })
 
-  RED.nodes.registerType("signalk-client", {
-    category: "config",
-    color: "#a6bbcf",
+  RED.nodes.registerType('signalk-client', {
+    category: 'config',
+    color: '#a6bbcf',
     defaults: {
-      hostname: { value: "localhost" },
+      hostname: { value: 'localhost' },
       isEmbedded: { value: false },
       port: { value: 3000 },
-      useTLS: { value: false },
+      useTLS: { value: false }
     },
     credentials: {
-      username: { type: "text" },
-      password: { type: "password" },
+      username: { type: 'text' },
+      password: { type: 'password' }
     },
     label: function label() {
-      return this.isEmbedded ? "Embedded" : this.hostname + ":" + this.port;
+      return this.isEmbedded ? 'Embedded' : this.hostname + ':' + this.port
     },
     // setting hasUsers to false means we don't get a warning on deployment, if/when there is no node referring to this config node.
     hasUsers: false,
     onpaletteremove: function onpaletteremove() {
       RED.nodes.eachConfig(function (n) {
-        if (n.id === embeddedClientId) RED.nodes.remove(n.id);
-      });
-      RED.nodes.dirty(true);
-    },
-  });
+        if (n.id === embeddedClientId) RED.nodes.remove(n.id)
+      })
+      RED.nodes.dirty(true)
+    }
+  })
 </script>

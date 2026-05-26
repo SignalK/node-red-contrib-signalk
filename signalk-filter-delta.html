@@ -1,20 +1,20 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-filter-delta", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-filter-delta', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      context: { value: "vessels.self" },
-      path: { value: "" },
+      name: { value: '' },
+      context: { value: 'vessels.self' },
+      path: { value: '' }
     },
     inputs: 1,
     outputs: 1,
-    icon: "function.png",
+    icon: 'function.png',
     label: function () {
-      return this.name || "signalk-filter-delta";
+      return this.name || 'signalk-filter-delta'
     },
-    paletteLabel: "filter delta",
-  });
+    paletteLabel: 'filter delta'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-filter-delta">

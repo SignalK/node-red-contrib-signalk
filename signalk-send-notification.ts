@@ -1,56 +1,56 @@
-import coreDebug from "debug";
-import { getServer } from "./config-client.js";
-const debug = coreDebug("node-red-contrib-signalk:signalk-send-notification");
+import coreDebug from 'debug'
+import { getServer } from './config-client.js'
+const debug = coreDebug('node-red-contrib-signalk:signalk-send-notification')
 
 export default function (RED) {
   function signalKSendNotification(config) {
-    RED.nodes.createNode(this, config);
-    const node = this;
+    RED.nodes.createNode(this, config)
+    const node = this
 
-    const server = getServer(RED, node);
+    const server = getServer(RED, node)
 
     if (!server) {
-      return;
+      return
     }
 
-    let showingStatus = false;
+    let showingStatus = false
     function showStatus(text) {
       if (!showingStatus) {
-        node.status({ fill: "green", shape: "dot", text: text });
-        showingStatus = true;
+        node.status({ fill: 'green', shape: 'dot', text: text })
+        showingStatus = true
         setTimeout(() => {
-          node.status({});
-          showingStatus = false;
-        }, 1000);
+          node.status({})
+          showingStatus = false
+        }, 1000)
       }
     }
 
-    node.on("input", (msg) => {
+    node.on('input', (msg) => {
       try {
-        const info = typeof msg.payload === "object" ? msg.payload : null;
-        let path = info && info.path ? info.path : config.path;
-        const state = info && info.state ? info.state : config.state;
-        const message = info && info.message ? info.message : config.message;
-        let source = info && info.$source ? info.$source : config.source;
-        let method;
+        const info = typeof msg.payload === 'object' ? msg.payload : null
+        let path = info && info.path ? info.path : config.path
+        const state = info && info.state ? info.state : config.state
+        const message = info && info.message ? info.message : config.message
+        let source = info && info.$source ? info.$source : config.source
+        let method
         if (info && info.method) {
-          method = info.method;
+          method = info.method
         } else {
-          method = [];
+          method = []
           if (config.visual) {
-            method.push("visual");
+            method.push('visual')
           }
           if (config.sound) {
-            method.push("sound");
+            method.push('sound')
           }
         }
 
-        if (typeof source !== "undefined" && source.length === 0) {
-          source = undefined;
+        if (typeof source !== 'undefined' && source.length === 0) {
+          source = undefined
         }
 
-        if (!path.startsWith("notifications.")) {
-          path = "notifications." + path;
+        if (!path.startsWith('notifications.')) {
+          path = 'notifications.' + path
         }
 
         const delta = {
@@ -63,23 +63,23 @@ export default function (RED) {
                   value: {
                     state: state,
                     method: method,
-                    message: message,
-                  },
-                },
-              ],
-            },
-          ],
-        };
+                    message: message
+                  }
+                }
+              ]
+            }
+          ]
+        }
         server.handleMessage(node, delta).then((sent) => {
           if (sent) {
-            debug("sending notification with delta %j", delta);
-            showStatus(`sent notification ${path}=${state}`);
+            debug('sending notification with delta %j', delta)
+            showStatus(`sent notification ${path}=${state}`)
           }
-        });
+        })
       } catch (err) {
-        server.onError(node, err);
+        server.onError(node, err)
       }
-    });
+    })
   }
-  RED.nodes.registerType("signalk-send-notification", signalKSendNotification);
+  RED.nodes.registerType('signalk-send-notification', signalKSendNotification)
 }
