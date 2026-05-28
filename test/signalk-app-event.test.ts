@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockApp } from './helpers/red-mock.js'
-import registerAppEvent from '../signalk-app-event.js'
+import registerAppEvent from '../dist/signalk-app-event.js'
 
 describe('signalk-app-event', () => {
   let clock

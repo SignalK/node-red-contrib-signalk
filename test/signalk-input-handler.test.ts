@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED } from './helpers/red-mock.js'
-import registerInputHandler from '../signalk-input-handler.js'
+import registerInputHandler from '../dist/signalk-input-handler.js'
 
 describe('signalk-input-handler', () => {
   function makeMockPlugin() {

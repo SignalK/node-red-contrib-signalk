@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerDimmerSwitch from '../signalk-dimmer-switch.js'
+import registerDimmerSwitch from '../dist/signalk-dimmer-switch.js'
 
 describe('signalk-dimmer-switch', () => {
   let server, node, clock

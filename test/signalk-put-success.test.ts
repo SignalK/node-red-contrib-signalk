@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerPutSuccess from '../signalk-put-success.js'
+import registerPutSuccess from '../dist/signalk-put-success.js'
 
 describe('signalk-put-success', () => {
   let server, node

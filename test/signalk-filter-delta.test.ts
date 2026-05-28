@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED } from './helpers/red-mock.js'
-import registerFilterDelta from '../signalk-filter-delta.js'
+import registerFilterDelta from '../dist/signalk-filter-delta.js'
 
 describe('signalk-filter-delta', () => {
   let node

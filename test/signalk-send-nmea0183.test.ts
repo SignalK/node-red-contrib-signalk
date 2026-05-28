@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockApp } from './helpers/red-mock.js'
-import registerSendNmea0183 from '../signalk-send-nmea0183.js'
+import registerSendNmea0183 from '../dist/signalk-send-nmea0183.js'
 
 describe('signalk-send-nmea0183', () => {
   let clock

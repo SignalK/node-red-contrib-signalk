@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerGeofence from '../signalk-geofence.js'
+import registerGeofence from '../dist/signalk-geofence.js'
 
 // Fence: centered at 37.0, -122.0 with 1000m radius
 // Inside:  ~142m away

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockApp } from './helpers/red-mock.js'
-import registerSendNmea2000 from '../signalk-send-nmea2000.js'
+import registerSendNmea2000 from '../dist/signalk-send-nmea2000.js'
 
 // Minimal lodash stub — only isObject is used by this node
 const lodashStub = { isObject: (v) => v !== null && typeof v === 'object' }

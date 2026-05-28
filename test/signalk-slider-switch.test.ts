@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerSliderSwitch from '../signalk-slider-switch.js'
+import registerSliderSwitch from '../dist/signalk-slider-switch.js'
 
 describe('signalk-slider-switch', () => {
   let server, node, clock

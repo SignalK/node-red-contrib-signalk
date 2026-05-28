@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerGet from '../signalk-get.js'
+import registerGet from '../dist/signalk-get.js'
 
 describe('signalk-get', () => {
   let server, node

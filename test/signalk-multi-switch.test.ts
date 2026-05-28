@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerMultiSwitch from '../signalk-multi-switch.js'
+import registerMultiSwitch from '../dist/signalk-multi-switch.js'
 
 const OPTIONS = [
   { title: 'Off', value: 0 },

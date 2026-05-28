@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerPutError from '../signalk-put-error.js'
+import registerPutError from '../dist/signalk-put-error.js'
 
 describe('signalk-put-error', () => {
   let server, node
