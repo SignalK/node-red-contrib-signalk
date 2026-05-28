@@ -1,23 +1,23 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-send-put", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-send-put', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      path: { value: "" },
-      source: { value: "" },
-      server: { value: "", type: "signalk-client", required: true },
+      name: { value: '' },
+      path: { value: '' },
+      source: { value: '' },
+      server: { value: '', type: 'signalk-client', required: true }
     },
     inputs: 1,
     outputs: 2,
-    outputLabels: ["success", "error"],
-    icon: "bridge.png",
-    align: "right",
+    outputLabels: ['success', 'error'],
+    icon: 'bridge.png',
+    align: 'right',
     label: function () {
-      return this.name || "signalk-send-put";
+      return this.name || 'signalk-send-put'
     },
-    paletteLabel: "send put",
-  });
+    paletteLabel: 'send put'
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-send-put">

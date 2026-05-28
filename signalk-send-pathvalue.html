@@ -1,29 +1,29 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-send-pathvalue", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-send-pathvalue', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      path: { value: "" },
-      source: { value: "" },
-      meta: { value: "", required: false },
-      server: { value: "", type: "signalk-client", required: true },
+      name: { value: '' },
+      path: { value: '' },
+      source: { value: '' },
+      meta: { value: '', required: false },
+      server: { value: '', type: 'signalk-client', required: true }
     },
     inputs: 1,
     outputs: 0,
-    icon: "bridge.png",
-    align: "right",
+    icon: 'bridge.png',
+    align: 'right',
     label: function () {
-      return this.name || "signalk-send-pathvalue";
+      return this.name || 'signalk-send-pathvalue'
     },
-    paletteLabel: "send pathvalue",
+    paletteLabel: 'send pathvalue',
     oneditprepare: () => {
-      $("#node-input-meta").typedInput({
-        type: "json",
-        types: ["json"],
-      });
-    },
-  });
+      $('#node-input-meta').typedInput({
+        type: 'json',
+        types: ['json']
+      })
+    }
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-send-pathvalue">

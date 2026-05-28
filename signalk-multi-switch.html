@@ -1,128 +1,126 @@
 <script type="text/javascript">
-  RED.nodes.registerType("signalk-multi-switch", {
-    category: "Signal K",
-    color: "#ffcc01",
+  RED.nodes.registerType('signalk-multi-switch', {
+    category: 'Signal K',
+    color: '#ffcc01',
     defaults: {
-      name: { value: "" },
-      path: { value: "", required: true },
+      name: { value: '' },
+      path: { value: '', required: true },
       pending: { value: false },
-      displayName: { value: "" },
-      optionType: { value: "string", required: true },
+      displayName: { value: '' },
+      optionType: { value: 'string', required: true },
       options: { value: [], required: true },
-      server: { value: "", type: "signalk-client", required: true },
+      server: { value: '', type: 'signalk-client', required: true }
     },
     inputs: 1,
     outputs: 1,
-    outputLabels: ["state"],
-    inputLabels: ["state"],
-    icon: "bridge.png",
+    outputLabels: ['state'],
+    inputLabels: ['state'],
+    icon: 'bridge.png',
     label: function () {
-      return this.name || "signalk-multi-switch";
+      return this.name || 'signalk-multi-switch'
     },
-    paletteLabel: "multi switch",
+    paletteLabel: 'multi switch',
     oneditprepare: function () {
       // Initialize the Editable List widget
-      $("#node-input-options-container").editableList({
+      $('#node-input-options-container').editableList({
         addItem: function (container, i, data) {
           // This runs when the "Add" button is clicked
-          var row = $("<div/>", {
-            style: "display: flex; gap: 8px;",
-          }).appendTo(container);
+          var row = $('<div/>', {
+            style: 'display: flex; gap: 8px;'
+          }).appendTo(container)
 
-          var titleField = $("<input/>", {
-            class: "node-input-option-title",
-            type: "text",
-            placeholder: "Title",
-            style: "width: 50%;",
-          }).appendTo(row);
+          var titleField = $('<input/>', {
+            class: 'node-input-option-title',
+            type: 'text',
+            placeholder: 'Title',
+            style: 'width: 50%;'
+          }).appendTo(row)
 
-          var valueField = $("<input/>", {
-            class: "node-input-option-value",
-            type: "text",
-            placeholder: "Value",
-            style: "width: 50%;",
-          }).appendTo(row);
+          var valueField = $('<input/>', {
+            class: 'node-input-option-value',
+            type: 'text',
+            placeholder: 'Value',
+            style: 'width: 50%;'
+          }).appendTo(row)
 
-          var optionValue;
+          var optionValue
 
-          if (data.option && typeof data.option === "object") {
-            optionValue = data.option.value;
+          if (data.option && typeof data.option === 'object') {
+            optionValue = data.option.value
           } else {
-            optionValue = data.option;
+            optionValue = data.option
           }
 
           if (optionValue !== undefined && optionValue !== null) {
-            valueField.val(String(optionValue));
+            valueField.val(String(optionValue))
           }
 
-          if (data.option && typeof data.option === "object") {
-            titleField.val(data.option.title || "");
+          if (data.option && typeof data.option === 'object') {
+            titleField.val(data.option.title || '')
           } else if (data.option) {
-            titleField.val(data.option);
+            titleField.val(data.option)
           }
         },
         sortable: true, // Optional: allows drag-and-drop reordering
-        removable: true, // Adds a delete icon next to each row
-      });
+        removable: true // Adds a delete icon next to each row
+      })
 
       // Load existing items into the UI when opening the dialog
       if (this.options) {
         this.options.forEach(function (option) {
-          $("#node-input-options-container").editableList("addItem", {
-            option: option,
-          });
-        });
+          $('#node-input-options-container').editableList('addItem', {
+            option: option
+          })
+        })
       }
     },
     oneditsave: function () {
-      var node = this;
-      var optionsList = $("#node-input-options-container").editableList(
-        "items",
-      );
-      var validationErrors = [];
-      var optionType = $("#node-input-optionType").val();
-      node.options = [];
+      var node = this
+      var optionsList = $('#node-input-options-container').editableList('items')
+      var validationErrors = []
+      var optionType = $('#node-input-optionType').val()
+      node.options = []
 
       // Loop through UI rows and save values back to the array
       optionsList.each(function (index) {
-        var optionTitle = $(this).find(".node-input-option-title").val();
+        var optionTitle = $(this).find('.node-input-option-title').val()
         var optionRawValue = $(this)
-          .find(".node-input-option-value")
+          .find('.node-input-option-value')
           .val()
-          .trim();
+          .trim()
 
         if (optionRawValue) {
-          var parsedValue = optionRawValue;
+          var parsedValue = optionRawValue
 
-          if (optionType === "number") {
+          if (optionType === 'number') {
             var numValidation = RED.utils.validateTypedProperty(
               optionRawValue,
-              "num",
-            );
+              'num'
+            )
             if (numValidation !== true) {
-              validationErrors.push(index + 1);
-              return;
+              validationErrors.push(index + 1)
+              return
             }
-            parsedValue = Number(optionRawValue);
+            parsedValue = Number(optionRawValue)
           }
 
           node.options.push({
             title: optionTitle || optionRawValue,
-            value: parsedValue,
-          });
+            value: parsedValue
+          })
         }
-      });
+      })
 
       if (validationErrors.length > 0) {
         RED.notify(
-          "Invalid numeric value in option row(s): " +
-            validationErrors.join(", "),
-          "error",
-        );
-        throw new Error("Invalid option value");
+          'Invalid numeric value in option row(s): ' +
+            validationErrors.join(', '),
+          'error'
+        )
+        throw new Error('Invalid option value')
       }
-    },
-  });
+    }
+  })
 </script>
 
 <script type="text/x-red" data-template-name="signalk-multi-switch">
