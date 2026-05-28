@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED } from './helpers/red-mock.js'
-import registerDelay from '../signalk-delay.js'
+import registerDelay from '../dist/signalk-delay.js'
 
 // Minimal lodash stub — only isEqual is used by this node
 const lodashStub = {

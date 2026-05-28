@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerSubscribe from '../signalk-subscribe.js'
+import registerSubscribe from '../dist/signalk-subscribe.js'
 
 describe('signalk-subscribe', () => {
   let server, RED, registeredTypes

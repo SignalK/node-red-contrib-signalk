@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerGeofenceSwitch from '../signalk-geofence-switch.js'
+import registerGeofenceSwitch from '../dist/signalk-geofence-switch.js'
 
 const FENCE_LAT = 37.0
 const FENCE_LON = -122.0

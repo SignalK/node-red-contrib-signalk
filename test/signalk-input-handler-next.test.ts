@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { createRED, createMockApp } from './helpers/red-mock.js'
-import registerInputHandlerNext from '../signalk-input-handler-next.js'
+import registerInputHandlerNext from '../dist/signalk-input-handler-next.js'
 
 describe('signalk-input-handler-next', () => {
   function setup(app) {

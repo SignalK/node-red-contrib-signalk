@@ -5,7 +5,7 @@ import {
   createMockApp,
   createMockSignalK
 } from './helpers/red-mock.js'
-import registerOnDelta from '../signalk-on-delta.js'
+import registerOnDelta from '../dist/signalk-on-delta.js'
 
 describe('signalk-on-delta', () => {
   let clock

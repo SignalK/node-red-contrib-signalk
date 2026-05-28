@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerPutHandler from '../signalk-put-handler.js'
+import registerPutHandler from '../dist/signalk-put-handler.js'
 
 describe('signalk-put-handler', () => {
   let server, node

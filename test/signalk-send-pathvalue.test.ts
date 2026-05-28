@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerSendPathvalue from '../signalk-send-pathvalue.js'
+import registerSendPathvalue from '../dist/signalk-send-pathvalue.js'
 
 describe('signalk-send-pathvalue', () => {
   let server, node

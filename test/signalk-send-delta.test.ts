@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerSendDelta from '../signalk-send-delta.js'
+import registerSendDelta from '../dist/signalk-send-delta.js'
 
 describe('signalk-send-delta', () => {
   let server, node

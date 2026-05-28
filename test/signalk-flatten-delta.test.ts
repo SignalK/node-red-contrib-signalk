@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED } from './helpers/red-mock.js'
-import registerFlattenDelta from '../signalk-flatten-delta.js'
+import registerFlattenDelta from '../dist/signalk-flatten-delta.js'
 
 describe('signalk-flatten-delta', () => {
   let node

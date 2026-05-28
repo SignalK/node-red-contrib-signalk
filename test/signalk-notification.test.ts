@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRED, createMockServer } from './helpers/red-mock.js'
-import registerNotification from '../signalk-notification.js'
+import registerNotification from '../dist/signalk-notification.js'
 
 describe('signalk-notification', () => {
   let server, RED, registeredTypes
