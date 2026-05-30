@@ -41,7 +41,7 @@ describe('signalk-toggle-switch', () => {
     assert.equal(path, 'electrical.switches.0.state')
   })
 
-  it('PUT handler sends boolean value and returns COMPLETED/200 by default', () => {
+  it('PUT handler sends boolean value and sends COMPLETED/200 via sendPutResponse', () => {
     const handler = server.registerPutHandler.getCall(0).args[2]
 
     const result = handler(
@@ -51,10 +51,15 @@ describe('signalk-toggle-switch', () => {
       'cb-id'
     )
 
-    assert.equal(result.state, 'COMPLETED')
-    assert.equal(result.statusCode, 200)
+    assert.equal(result.state, 'PENDING')
+    assert.equal(result.statusCode, 202)
     assert.equal(node.send.callCount, 1)
     assert.equal(node.send.getCall(0).args[0].payload, true)
+    assert.equal(server.sendPutResponse.callCount, 1)
+    const [, cbInfo, resp] = server.sendPutResponse.getCall(0).args
+    assert.equal(cbInfo, 'cb-id')
+    assert.equal(resp.state, 'COMPLETED')
+    assert.equal(resp.statusCode, 200)
   })
 
   it('PUT handler coerces numeric 1 to true', () => {
