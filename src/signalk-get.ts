@@ -1,6 +1,7 @@
+import { NodeAPI } from 'node-red'
 import { getServer } from './config-client.js'
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function signalKGet(config) {
     RED.nodes.createNode(this, config)
     const node = this

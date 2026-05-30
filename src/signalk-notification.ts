@@ -1,8 +1,9 @@
+import { NodeAPI } from 'node-red'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-notification')
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function SignalKNotification(config) {
     RED.nodes.createNode(this, config)
     const node = this

@@ -32,7 +32,7 @@ describe('signalk-dimmer-switch', () => {
     assert.equal(path, 'electrical.lights.cabin.dimmingLevel')
   })
 
-  it('PUT handler accepts a value in [0, 1] and returns COMPLETED/200', () => {
+  it('PUT handler accepts a value in [0, 1] and sends COMPLETED/200 via sendPutResponse', () => {
     const handler = server.registerPutHandler.getCall(0).args[2]
 
     const result = handler(
@@ -42,22 +42,24 @@ describe('signalk-dimmer-switch', () => {
       'cb'
     )
 
-    assert.equal(result.state, 'COMPLETED')
-    assert.equal(result.statusCode, 200)
+    assert.equal(result.state, 'PENDING')
+    assert.equal(result.statusCode, 202)
+    assert.equal(server.sendPutResponse.callCount, 1)
+    const [, cbInfo, resp] = server.sendPutResponse.getCall(0).args
+    assert.equal(cbInfo, 'cb')
+    assert.equal(resp.state, 'COMPLETED')
+    assert.equal(resp.statusCode, 200)
   })
 
-  it('PUT handler rejects value outside [0, 1] with COMPLETED/400', () => {
+  it('PUT handler rejects value outside [0, 1] with COMPLETED/400 via sendPutResponse', () => {
     const handler = server.registerPutHandler.getCall(0).args[2]
 
-    const result = handler(
-      'vessels.self',
-      'electrical.lights.cabin.dimmingLevel',
-      1.5,
-      'cb'
-    )
+    handler('vessels.self', 'electrical.lights.cabin.dimmingLevel', 1.5, 'cb')
 
-    assert.equal(result.state, 'COMPLETED')
-    assert.equal(result.statusCode, 400)
+    assert.equal(server.sendPutResponse.callCount, 1)
+    const [, , resp] = server.sendPutResponse.getCall(0).args
+    assert.equal(resp.state, 'COMPLETED')
+    assert.equal(resp.statusCode, 400)
     assert.equal(node.error.callCount, 1)
   })
 

@@ -1,9 +1,10 @@
+import { NodeAPI } from 'node-red'
 import geodist from 'geodist'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-geofence')
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function signalk(config) {
     RED.nodes.createNode(this, config)
     const node = this

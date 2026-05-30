@@ -18,8 +18,11 @@ export function createNodeContext(initialGlobal = {}) {
         return val
       }
     },
-    set(key, value, _storeName) {
+    set(key, value, _storeName, cb?) {
       globalData[key] = value
+      if (typeof cb === 'function') {
+        cb(null)
+      }
     },
     _data: globalData
   }

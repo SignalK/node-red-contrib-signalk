@@ -1,9 +1,10 @@
+import { NodeAPI } from 'node-red'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-toggle-switch')
 const storeName = 'skpersist'
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function SignalKToggleSwitch(config) {
     RED.nodes.createNode(this, config)
     const node = this
@@ -22,31 +23,46 @@ export default function (RED) {
 
     function handlePut(context, path, value, cbInfo) {
       value = value === 1 || value === true
-      globalContext.set(path, value, storeName)
-      sendUpdate(value)
-      if (config.pending) {
-        node.status({
-          fill: 'green',
-          shape: 'dot',
-          text: `pending value ${value}`
-        })
-        node.send({ topic: path, payload: value, cbInfo })
-        return {
-          state: 'PENDING',
-          statusCode: 202
+      globalContext.set(path, value, storeName, (err) => {
+        if (err) {
+          node.error(`error setting value: ${err}`)
+          node.status({
+            fill: 'red',
+            shape: 'dot',
+            text: `error setting value: ${err}`
+          })
+          server.sendPutResponse(node, cbInfo, {
+            state: 'COMPLETED',
+            statusCode: 500,
+            message: err.toString()
+          })
+          return
         }
-      } else {
-        node.send({ topic: path, payload: value })
-        node.status({
-          fill: 'green',
-          shape: 'dot',
-          text: `put received: ${value}`
-        })
+        sendUpdate(value)
+        if (config.pending) {
+          node.status({
+            fill: 'green',
+            shape: 'dot',
+            text: `pending value ${value}`
+          })
+          node.send({ topic: path, payload: value, cbInfo })
+        } else {
+          node.send({ topic: path, payload: value })
+          node.status({
+            fill: 'green',
+            shape: 'dot',
+            text: `put received: ${value}`
+          })
 
-        return {
-          state: 'COMPLETED',
-          statusCode: 200
+          server.sendPutResponse(node, cbInfo, {
+            state: 'COMPLETED',
+            statusCode: 200
+          })
         }
+      })
+      return {
+        state: 'PENDING',
+        statusCode: 202
       }
     }
 

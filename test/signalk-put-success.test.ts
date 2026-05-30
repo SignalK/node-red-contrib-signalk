@@ -39,11 +39,10 @@ describe('signalk-put-success', () => {
     assert.equal(resp.message, 'done')
   })
 
-  it('passes the original msg to sendPutResponse so cbInfo is available', () => {
-    const msg = { cbInfo: 'cb-abc' }
-    node._trigger('input', msg)
+  it('passes cbInfo to sendPutResponse', () => {
+    node._trigger('input', { cbInfo: 'cb-abc' })
 
-    const [, passedMsg] = server.sendPutResponse.getCall(0).args
-    assert.equal(passedMsg.cbInfo, 'cb-abc')
+    const [, passedCbInfo] = server.sendPutResponse.getCall(0).args
+    assert.equal(passedCbInfo, 'cb-abc')
   })
 })

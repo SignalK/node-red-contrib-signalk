@@ -1,10 +1,11 @@
+import { NodeAPI, NodeContext } from 'node-red'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-multi-switch')
 
 const storeName = 'skpersist'
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function SignalKMultiSwitch(config) {
     RED.nodes.createNode(this, config)
     const node = this
@@ -27,7 +28,7 @@ export default function (RED) {
     if (!server) {
       return
     }
-    const globalContext = node.context().global
+    const globalContext: NodeContext = node.context().global
 
     if (config.options.length === 0) {
       node.error('at least one option must be defined')
@@ -48,7 +49,6 @@ export default function (RED) {
 
     function handlePut(context, path, value, cbInfo) {
       const option = getOptionWithValue(value)
-      let resp
       if (!option) {
         node.error(`invalid value: ${value}`)
         node.status({
@@ -57,40 +57,54 @@ export default function (RED) {
           text: `invalid value: ${value}`
         })
 
-        resp = {
+        return {
           state: 'COMPLETED',
           statusCode: 400,
           message: 'Invalid value'
         }
       } else {
-        globalContext.set(path, option.value, storeName)
-        sendUpdate(option.value)
-        if (config.pending) {
-          node.send({ topic: path, payload: option.value, cbInfo })
-          node.status({
-            fill: 'green',
-            shape: 'dot',
-            text: `pending value ${option.title}`
-          })
-          resp = {
-            state: 'PENDING',
-            statusCode: 202
+        globalContext.set(path, option.value, storeName, (err) => {
+          if (err) {
+            node.error(`error setting value: ${err}`)
+            node.status({
+              fill: 'red',
+              shape: 'dot',
+              text: `error setting value: ${err}`
+            })
+            server.sendPutResponse(node, cbInfo, {
+              state: 'COMPLETED',
+              statusCode: 500,
+              message: err.toString()
+            })
+            return
           }
-        } else {
-          node.send({ topic: path, payload: option.value })
-          node.status({
-            fill: 'green',
-            shape: 'dot',
-            text: `put received: ${option.title}`
-          })
-          resp = {
-            state: 'COMPLETED',
-            statusCode: 200
+          sendUpdate(option.value)
+          if (config.pending) {
+            node.send({ topic: path, payload: option.value, cbInfo })
+            node.status({
+              fill: 'green',
+              shape: 'dot',
+              text: `pending value ${option.title}`
+            })
+          } else {
+            node.send({ topic: path, payload: option.value })
+            node.status({
+              fill: 'green',
+              shape: 'dot',
+              text: `put received: ${option.title}`
+            })
+            server.sendPutResponse(node, cbInfo, {
+              state: 'COMPLETED',
+              statusCode: 200
+            })
           }
-        }
+        })
       }
 
-      return resp
+      return {
+        state: 'PENDING',
+        statusCode: 202
+      }
     }
 
     function sendUpdate(value) {
@@ -151,14 +165,24 @@ export default function (RED) {
     node.on('input', (msg) => {
       const option = getOptionWithValue(msg.payload)
       if (option) {
-        globalContext.set(path, option.value, storeName)
-        sendUpdate(option.value)
-        node.status({
-          fill: 'green',
-          shape: 'dot',
-          text: `input: ${option.title}`
+        globalContext.set(path, option.value, storeName, (err) => {
+          if (err) {
+            node.error(`error setting value: ${err}`)
+            node.status({
+              fill: 'red',
+              shape: 'dot',
+              text: `error setting value: ${err}`
+            })
+            return
+          }
+          sendUpdate(option.value)
+          node.status({
+            fill: 'green',
+            shape: 'dot',
+            text: `input: ${option.title}`
+          })
+          node.send({ topic: path, payload: option.value })
         })
-        node.send({ topic: path, payload: option.value })
       } else {
         node.error(
           `payload must be one of: ${config.options.map((opt) => opt.value).join(', ')}`

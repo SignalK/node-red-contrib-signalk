@@ -33,7 +33,7 @@ describe('signalk-slider-switch', () => {
     assert.equal(path, 'electrical.fans.cabin.state')
   })
 
-  it('PUT handler accepts a value within range and returns COMPLETED/200', () => {
+  it('PUT handler accepts a value within range and sends COMPLETED/200 via sendPutResponse', () => {
     const handler = server.registerPutHandler.getCall(0).args[2]
 
     const result = handler(
@@ -43,23 +43,25 @@ describe('signalk-slider-switch', () => {
       'cb'
     )
 
-    assert.equal(result.state, 'COMPLETED')
-    assert.equal(result.statusCode, 200)
+    assert.equal(result.state, 'PENDING')
+    assert.equal(result.statusCode, 202)
     assert.equal(node.send.getCall(0).args[0].payload, 50)
+    assert.equal(server.sendPutResponse.callCount, 1)
+    const [, cbInfo, resp] = server.sendPutResponse.getCall(0).args
+    assert.equal(cbInfo, 'cb')
+    assert.equal(resp.state, 'COMPLETED')
+    assert.equal(resp.statusCode, 200)
   })
 
-  it('PUT handler rejects a value outside the range with COMPLETED/400', () => {
+  it('PUT handler rejects a value outside the range with COMPLETED/400 via sendPutResponse', () => {
     const handler = server.registerPutHandler.getCall(0).args[2]
 
-    const result = handler(
-      'vessels.self',
-      'electrical.fans.cabin.state',
-      150,
-      'cb'
-    )
+    handler('vessels.self', 'electrical.fans.cabin.state', 150, 'cb')
 
-    assert.equal(result.state, 'COMPLETED')
-    assert.equal(result.statusCode, 400)
+    assert.equal(server.sendPutResponse.callCount, 1)
+    const [, , resp] = server.sendPutResponse.getCall(0).args
+    assert.equal(resp.state, 'COMPLETED')
+    assert.equal(resp.statusCode, 400)
     assert.equal(node.send.callCount, 0)
   })
 

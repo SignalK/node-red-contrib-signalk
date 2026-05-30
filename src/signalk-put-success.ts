@@ -1,6 +1,7 @@
+import { NodeAPI } from 'node-red'
 import { getServer } from './config-client.js'
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function SignalK(config) {
     RED.nodes.createNode(this, config)
     const node = this
@@ -12,7 +13,7 @@ export default function (RED) {
     }
 
     node.on('input', (msg) => {
-      server.sendPutResponse(node, msg, {
+      server.sendPutResponse(node, msg.cbInfo, {
         state: 'COMPLETED',
         statusCode: msg.statusCode || 200,
         message: msg.message

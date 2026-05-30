@@ -1,9 +1,10 @@
+import { NodeAPI } from 'node-red'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-dimmer-switch')
 const storeName = 'skpersist'
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function SignalKDimmerSwitch(config) {
     RED.nodes.createNode(this, config)
     const node = this
@@ -106,7 +107,7 @@ export default function (RED) {
       return `pending state ${value}`
     }
 
-    function sendOutputWithCbInfo(dimmingLevel, state, cbInfo) {
+    function sendOutput(dimmingLevel, state, cbInfo) {
       let dimmingObj = null
       let stateObj = null
       let object: any = { topic: basePath, payload: {} }
@@ -138,61 +139,21 @@ export default function (RED) {
       node.send([dimmingObj, stateObj, object])
     }
 
-    function sendOutput(dimmingLevel, state) {
-      let dimmingObj = null
-      let stateObj = null
-      const object: any = { topic: basePath, payload: {} }
-
-      if (state !== null) {
-        stateObj = {
-          topic: statePath,
-          payload: state
-        }
-        object.payload.state = state
-      }
-
-      if (dimmingLevel !== null) {
-        dimmingObj = {
-          topic: dimmingPath,
-          payload: dimmingLevel
-        }
-        object.payload.dimmingLevel = dimmingLevel
-      }
-
-      const out = [dimmingObj, stateObj, object]
-      node.send(out)
-      updateStatus(dimmingLevel, state)
+    function handleSetError(err, label, cb) {
+      node.error(`error setting ${label}: ${err}`)
+      node.status({
+        fill: 'red',
+        shape: 'dot',
+        text: `error setting ${label}: ${err}`
+      })
+      cb({
+        state: 'COMPLETED',
+        statusCode: 500,
+        message: err.toString()
+      })
     }
 
-    function setDimmingLevel(value, _source) {
-      const dimmingLevel = parseDimmingLevel(value)
-      if (dimmingLevel === undefined) {
-        node.error(`invalid dimmingLevel: ${value}`)
-        node.status({
-          fill: 'red',
-          shape: 'dot',
-          text: `invalid dimmingLevel: ${value}`
-        })
-        return {
-          state: 'COMPLETED',
-          statusCode: 400,
-          message: 'Invalid dimmingLevel'
-        }
-      }
-
-      globalContext.set(dimmingPath, dimmingLevel, storeName)
-      sendValue(dimmingPath, dimmingLevel)
-
-      if (includeState) {
-        const state = dimmingLevel > 0
-        globalContext.set(statePath, state, storeName)
-        sendValue(statePath, state)
-      }
-
-      return { state: 'COMPLETED', statusCode: 200 }
-    }
-
-    function setState(value) {
+    function setState(value, cb) {
       const state = parseState(value)
       if (state === undefined) {
         node.error(`invalid state: ${value}`)
@@ -201,38 +162,86 @@ export default function (RED) {
           shape: 'dot',
           text: `invalid state: ${value}`
         })
-        return {
+        cb({
           state: 'COMPLETED',
           statusCode: 400,
           message: 'Invalid state'
-        }
+        })
+        return
       }
 
-      globalContext.set(statePath, state, storeName)
-      sendValue(statePath, state)
+      globalContext.set(statePath, state, storeName, (err) => {
+        if (err) {
+          handleSetError(err, 'state', cb)
+          return
+        }
+        sendValue(statePath, state)
+        cb({ state: 'COMPLETED', statusCode: 200 })
+      })
+    }
 
-      return { state: 'COMPLETED', statusCode: 200 }
+    function setDimmingLevel(value, _source, cb) {
+      const dimmingLevel = parseDimmingLevel(value)
+      if (dimmingLevel === undefined) {
+        node.error(`invalid dimmingLevel: ${value}`)
+        node.status({
+          fill: 'red',
+          shape: 'dot',
+          text: `invalid dimmingLevel: ${value}`
+        })
+        cb({
+          state: 'COMPLETED',
+          statusCode: 400,
+          message: 'Invalid dimmingLevel'
+        })
+        return
+      }
+
+      globalContext.set(dimmingPath, dimmingLevel, storeName, (err) => {
+        if (err) {
+          handleSetError(err, 'dimmingLevel', cb)
+          return
+        }
+        sendValue(dimmingPath, dimmingLevel)
+
+        if (includeState) {
+          const state = dimmingLevel > 0
+          globalContext.set(statePath, state, storeName, (stateErr) => {
+            if (stateErr) {
+              handleSetError(stateErr, 'state', cb)
+              return
+            }
+            sendValue(statePath, state)
+            cb({ state: 'COMPLETED', statusCode: 200 })
+          })
+          return
+        }
+
+        cb({ state: 'COMPLETED', statusCode: 200 })
+      })
     }
 
     server.registerPutHandler(
       node,
       dimmingPath,
       (context, path, value, cbInfo) => {
-        const res = setDimmingLevel(value, 'put')
-        if (res.statusCode === 200) {
-          if (config.pending) {
-            sendOutputWithCbInfo(value, null, cbInfo)
-            node.status({
-              fill: 'green',
-              shape: 'dot',
-              text: statusTextForPendingPut(path, value)
-            })
-            return { state: 'PENDING', statusCode: 202 }
-          }
+        setDimmingLevel(value, 'put', (res) => {
+          if (res.statusCode === 200) {
+            if (config.pending) {
+              sendOutput(value, null, cbInfo)
+              node.status({
+                fill: 'green',
+                shape: 'dot',
+                text: statusTextForPendingPut(path, value)
+              })
+              return
+            }
 
-          sendOutput(value, null)
-        }
-        return res
+            sendOutput(value, null, null)
+          }
+          server.sendPutResponse(node, cbInfo, res)
+        })
+        return { state: 'PENDING', statusCode: 202 }
       }
     )
 
@@ -241,21 +250,23 @@ export default function (RED) {
         node,
         statePath,
         (context, path, value, cbInfo) => {
-          const res = setState(value)
-          if (res.statusCode === 200) {
-            if (config.pending) {
-              sendOutputWithCbInfo(null, value, cbInfo)
-              node.status({
-                fill: 'green',
-                shape: 'dot',
-                text: statusTextForPendingPut(path, value)
-              })
-              return { state: 'PENDING', statusCode: 202 }
-            }
+          setState(value, (res) => {
+            if (res.statusCode === 200) {
+              if (config.pending) {
+                sendOutput(null, value, cbInfo)
+                node.status({
+                  fill: 'green',
+                  shape: 'dot',
+                  text: statusTextForPendingPut(path, value)
+                })
+                return
+              }
 
-            sendOutput(null, value)
-          }
-          return res
+              sendOutput(null, value, null)
+            }
+            server.sendPutResponse(node, cbInfo, res)
+          })
+          return { state: 'PENDING', statusCode: 202 }
         }
       )
     }
@@ -268,17 +279,32 @@ export default function (RED) {
 
       globalContext.get(dimmingPath, storeName, (err, dimmingLevel) => {
         const initialDimming = dimmingLevel !== undefined ? dimmingLevel : 0
-        globalContext.set(dimmingPath, initialDimming, storeName)
-        sendValue(dimmingPath, initialDimming)
+        globalContext.set(dimmingPath, initialDimming, storeName, (setErr) => {
+          if (setErr) {
+            node.error(`error setting dimmingLevel: ${setErr}`)
+            return
+          }
+          sendValue(dimmingPath, initialDimming)
 
-        if (includeState) {
-          globalContext.get(statePath, storeName, (stateErr, state) => {
-            const initialState =
-              state !== undefined ? state : initialDimming > 0
-            globalContext.set(statePath, initialState, storeName)
-            sendValue(statePath, initialState)
-          })
-        }
+          if (includeState) {
+            globalContext.get(statePath, storeName, (stateErr, state) => {
+              const initialState =
+                state !== undefined ? state : initialDimming > 0
+              globalContext.set(
+                statePath,
+                initialState,
+                storeName,
+                (stateSetErr) => {
+                  if (stateSetErr) {
+                    node.error(`error setting state: ${stateSetErr}`)
+                    return
+                  }
+                  sendValue(statePath, initialState)
+                }
+              )
+            })
+          }
+        })
       })
     }
     server.on('available', onAvailable)
@@ -302,45 +328,65 @@ export default function (RED) {
 
     node.on('input', (msg) => {
       if (typeof msg.payload === 'number' || typeof msg.payload === 'string') {
-        const result = setDimmingLevel(msg.payload, 'input')
-        if (result.statusCode === 200) {
-          sendOutput(msg.payload, null)
-          return
-        }
+        setDimmingLevel(msg.payload, 'input', (result) => {
+          if (result.statusCode === 200) {
+            sendOutput(msg.payload, null, null)
+          }
+        })
+        return
       } else if (includeState && typeof msg.payload === 'boolean') {
-        const stateResult = setState(msg.payload)
-        if (stateResult.statusCode === 200) {
-          sendOutput(null, msg.payload)
-          return
-        }
+        setState(msg.payload, (stateResult) => {
+          if (stateResult.statusCode === 200) {
+            sendOutput(null, msg.payload, null)
+          }
+        })
+        return
       } else if (typeof msg.payload === 'object') {
-        let changed = false
+        const payload = msg.payload
+        const hasDimming = payload.dimmingLevel !== undefined
+        const hasState = includeState && payload.state !== undefined
 
-        if (msg.payload.dimmingLevel !== undefined) {
-          const dimResult = setDimmingLevel(msg.payload.dimmingLevel, 'input')
-          if (dimResult.statusCode !== 200) {
-            return
-          }
-          changed = true
-        }
-
-        if (includeState && msg.payload.state !== undefined) {
-          const stateResult = setState(msg.payload.state)
-          if (stateResult.statusCode !== 200) {
-            return
-          }
-          changed = true
-        }
-
-        if (changed) {
-          sendOutput(
-            msg.payload.dimmingLevel,
-            includeState && msg.payload.state !== undefined
-              ? msg.payload.state
-              : null
+        if (!hasDimming && !hasState) {
+          node.error(
+            'payload must be a dimmingLevel between 0 and 1, a boolean, or an object with dimmingLevel and optional state'
           )
+          node.status({ fill: 'red', shape: 'dot', text: 'invalid input' })
           return
         }
+
+        const finish = () => {
+          sendOutput(
+            hasDimming ? payload.dimmingLevel : null,
+            hasState ? payload.state : null,
+            null
+          )
+        }
+
+        const applyState = () => {
+          if (!hasState) {
+            finish()
+            return
+          }
+          setState(payload.state, (stateResult) => {
+            if (stateResult.statusCode !== 200) {
+              return
+            }
+            finish()
+          })
+        }
+
+        if (hasDimming) {
+          setDimmingLevel(payload.dimmingLevel, 'input', (dimResult) => {
+            if (dimResult.statusCode !== 200) {
+              return
+            }
+            applyState()
+          })
+          return
+        }
+
+        applyState()
+        return
       }
 
       node.error(

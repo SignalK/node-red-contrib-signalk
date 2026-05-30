@@ -39,11 +39,10 @@ describe('signalk-put-error', () => {
     assert.equal(resp.message, 'permission denied')
   })
 
-  it('passes the original msg to sendPutResponse so cbInfo is available', () => {
-    const msg = { cbInfo: 'cb-xyz' }
-    node._trigger('input', msg)
+  it('passes cbInfo to sendPutResponse', () => {
+    node._trigger('input', { cbInfo: 'cb-xyz' })
 
-    const [, passedMsg] = server.sendPutResponse.getCall(0).args
-    assert.equal(passedMsg.cbInfo, 'cb-xyz')
+    const [, passedCbInfo] = server.sendPutResponse.getCall(0).args
+    assert.equal(passedCbInfo, 'cb-xyz')
   })
 })

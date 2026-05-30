@@ -61,7 +61,7 @@ describe('signalk-multi-switch', () => {
     assert.equal(path, 'electrical.switches.0.state')
   })
 
-  it('PUT handler accepts a valid option value and returns COMPLETED/200', () => {
+  it('PUT handler accepts a valid option value and returns PENDING/202', () => {
     const handler = server.registerPutHandler.getCall(0).args[2]
 
     const result = handler(
@@ -71,8 +71,8 @@ describe('signalk-multi-switch', () => {
       'cb-id'
     )
 
-    assert.equal(result.state, 'COMPLETED')
-    assert.equal(result.statusCode, 200)
+    assert.equal(result.state, 'PENDING')
+    assert.equal(result.statusCode, 202)
     assert.equal(node.send.getCall(0).args[0].payload, 1)
   })
 
