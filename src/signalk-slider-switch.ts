@@ -1,11 +1,12 @@
+import { NodeAPI, Node } from 'node-red'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-slider-switch')
 
 const storeName = 'skpersist'
 
-export default function (RED) {
-  function SignalKSliderSwitch(config) {
+export default function (RED: NodeAPI) {
+  function SignalKSliderSwitch(config: any) {
     RED.nodes.createNode(this, config)
     const node = this
 

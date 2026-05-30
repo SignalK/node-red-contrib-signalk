@@ -1,4 +1,5 @@
-export default function (RED) {
+import { NodeAPI } from 'node-red'
+export default function (RED: NodeAPI) {
   function SignalKOnEvent(config) {
     RED.nodes.createNode(this, config)
     const node = this

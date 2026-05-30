@@ -1,3 +1,4 @@
+import { NodeAPI } from 'node-red'
 import { Client } from '@signalk/client'
 import { ServerAPI, SubscriptionManager, Delta } from '@signalk/server-api'
 import { v4 as uuidv4 } from 'uuid'
@@ -46,7 +47,7 @@ export interface SignalKServer {
 const embeddedClientId = 'sk-embeded-id'
 let createEmbeddedClient
 
-export function getServer(RED, node): SignalKServer | null {
+export function getServer(RED: NodeAPI, node): SignalKServer | null {
   let server = RED.nodes.getNode(node.server)
   if (!server) {
     if (node.context().global.get('isSKEmbedded')) {
@@ -73,7 +74,7 @@ export function getServer(RED, node): SignalKServer | null {
       return null
     }
   }
-  return server
+  return (server as any)
 }
 
 function matchesSubscriptionContext(context, deltaContext, selfId) {
@@ -118,7 +119,7 @@ function deltaMatchesSubscription(delta, context, path, selfId) {
   })
 }
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function ConfigSignalKClient(config) {
     RED.nodes.createNode(this, config)
 
@@ -208,9 +209,9 @@ export default function (RED) {
         }
       }
 
-      this.sendPutResponse = (node, msg, resp) => {
-        if (msg.cbInfo) {
-          msg.cbInfo(resp)
+      this.sendPutResponse = (node, cbInfo, resp) => {
+        if (cbInfo) {
+          cbInfo(resp)
           return Promise.resolve(true)
         } else {
           node.error('Received put response without cbInfo')
@@ -431,9 +432,9 @@ export default function (RED) {
         }
       }
 
-      this.sendPutResponse = (node, msg, resp) => {
-        if (msg.cbInfo) {
-          resp.requestId = msg.cbInfo
+      this.sendPutResponse = (node, cbInfo, resp) => {
+        if (cbInfo) {
+          resp.requestId = cbInfo
           return this.send(node, resp)
         } else {
           return Promise.resolve(false)

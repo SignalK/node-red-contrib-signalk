@@ -1,9 +1,10 @@
+import { NodeAPI } from 'node-red'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-dimmer-switch')
 const storeName = 'skpersist'
 
-export default function (RED) {
+export default function (RED: NodeAPI) {
   function SignalKDimmerSwitch(config) {
     RED.nodes.createNode(this, config)
     const node = this
@@ -106,7 +107,7 @@ export default function (RED) {
       return `pending state ${value}`
     }
 
-    function sendOutputWithCbInfo(dimmingLevel, state, cbInfo) {
+    function sendOutput(dimmingLevel, state, cbInfo) {
       let dimmingObj = null
       let stateObj = null
       let object: any = { topic: basePath, payload: {} }
@@ -138,30 +139,26 @@ export default function (RED) {
       node.send([dimmingObj, stateObj, object])
     }
 
-    function sendOutput(dimmingLevel, state) {
-      let dimmingObj = null
-      let stateObj = null
-      const object: any = { topic: basePath, payload: {} }
-
-      if (state !== null) {
-        stateObj = {
-          topic: statePath,
-          payload: state
+    function setState(value) {
+      const state = parseState(value)
+      if (state === undefined) {
+        node.error(`invalid state: ${value}`)
+        node.status({
+          fill: 'red',
+          shape: 'dot',
+          text: `invalid state: ${value}`
+        })
+        return {
+          state: 'COMPLETED',
+          statusCode: 400,
+          message: 'Invalid state'
         }
-        object.payload.state = state
       }
 
-      if (dimmingLevel !== null) {
-        dimmingObj = {
-          topic: dimmingPath,
-          payload: dimmingLevel
-        }
-        object.payload.dimmingLevel = dimmingLevel
-      }
+      globalContext.set(statePath, state, storeName)
+      sendValue(statePath, state)
 
-      const out = [dimmingObj, stateObj, object]
-      node.send(out)
-      updateStatus(dimmingLevel, state)
+      return { state: 'COMPLETED', statusCode: 200 }
     }
 
     function setDimmingLevel(value, _source) {
@@ -192,28 +189,6 @@ export default function (RED) {
       return { state: 'COMPLETED', statusCode: 200 }
     }
 
-    function setState(value) {
-      const state = parseState(value)
-      if (state === undefined) {
-        node.error(`invalid state: ${value}`)
-        node.status({
-          fill: 'red',
-          shape: 'dot',
-          text: `invalid state: ${value}`
-        })
-        return {
-          state: 'COMPLETED',
-          statusCode: 400,
-          message: 'Invalid state'
-        }
-      }
-
-      globalContext.set(statePath, state, storeName)
-      sendValue(statePath, state)
-
-      return { state: 'COMPLETED', statusCode: 200 }
-    }
-
     server.registerPutHandler(
       node,
       dimmingPath,
@@ -221,7 +196,7 @@ export default function (RED) {
         const res = setDimmingLevel(value, 'put')
         if (res.statusCode === 200) {
           if (config.pending) {
-            sendOutputWithCbInfo(value, null, cbInfo)
+            sendOutput(value, null, cbInfo)
             node.status({
               fill: 'green',
               shape: 'dot',
@@ -230,7 +205,7 @@ export default function (RED) {
             return { state: 'PENDING', statusCode: 202 }
           }
 
-          sendOutput(value, null)
+          sendOutput(value, null, null)
         }
         return res
       }
@@ -244,7 +219,7 @@ export default function (RED) {
           const res = setState(value)
           if (res.statusCode === 200) {
             if (config.pending) {
-              sendOutputWithCbInfo(null, value, cbInfo)
+              sendOutput(null, value, cbInfo)
               node.status({
                 fill: 'green',
                 shape: 'dot',
@@ -253,7 +228,7 @@ export default function (RED) {
               return { state: 'PENDING', statusCode: 202 }
             }
 
-            sendOutput(null, value)
+            sendOutput(null, value, null)
           }
           return res
         }
@@ -304,13 +279,13 @@ export default function (RED) {
       if (typeof msg.payload === 'number' || typeof msg.payload === 'string') {
         const result = setDimmingLevel(msg.payload, 'input')
         if (result.statusCode === 200) {
-          sendOutput(msg.payload, null)
+          sendOutput(msg.payload, null, null)
           return
         }
       } else if (includeState && typeof msg.payload === 'boolean') {
         const stateResult = setState(msg.payload)
         if (stateResult.statusCode === 200) {
-          sendOutput(null, msg.payload)
+          sendOutput(null, msg.payload, null)
           return
         }
       } else if (typeof msg.payload === 'object') {
@@ -337,7 +312,8 @@ export default function (RED) {
             msg.payload.dimmingLevel,
             includeState && msg.payload.state !== undefined
               ? msg.payload.state
-              : null
+              : null,
+            null
           )
           return
         }

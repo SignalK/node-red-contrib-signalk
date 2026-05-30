@@ -14,7 +14,7 @@
     "ci-lint": "eslint . && prettier --check .",
     "ci-test": "npm run build && npm run test && npm run ci-lint",
     "format": "npm run prettier && npm run lint",
-    "watch": "npm run build -- -w"
+    "watch": "tsc --watch"
   },
   "author": "Scott Bender",
   "license": "Apache-2.0",
@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@signalk/client": "^2.4.0",
+    "@types/node-red": "^1.3.5",
     "geodist": "^0.2.1",
     "uuid": "^14.0.0"
   },
@@ -64,10 +65,10 @@
     "@eslint/js": "^9.33.0",
     "@signalk/server-api": "^2.25.0",
     "@types/node": "^25.9.1",
+    "copyfiles": "^2.4.1",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^16.4.0",
-    "copyfiles": "^2.4.1",
     "mocha": "^11.0.0",
     "prettier": "^3.6.2",
     "sinon": "^20.0.0",
