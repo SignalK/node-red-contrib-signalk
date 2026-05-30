@@ -157,6 +157,17 @@ Outputs:
 
 Embedded-only. Emits messages for deltas received by the local Signal K server. It can emit the whole delta or flattened path/value messages.
 
+#### `signalk-aggregate`
+
+Subscribes to a list of Signal K paths. When any one of them produces a delta, the node looks up the current value of every configured path via `getSelfPath` and emits a single message.
+
+Output:
+
+- `msg.topic` &mdash; the input `msg.topic` if present, otherwise the configured Topic, otherwise the path that triggered the update
+- `msg.payload` &mdash; an object mapping each configured path to its current value (or `null` if not available)
+
+An input message also triggers an aggregation. The input `msg.topic` is passed through to the output, and the input `msg.payload` is included in the output payload under the key `input`.
+
 #### `signalk-app-event`
 
 Embedded-only. Listens for a named event on the server `app` object and forwards the event payload.
