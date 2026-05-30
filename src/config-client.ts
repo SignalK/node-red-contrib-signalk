@@ -74,7 +74,7 @@ export function getServer(RED: NodeAPI, node): SignalKServer | null {
       return null
     }
   }
-  return (server as any)
+  return server as any
 }
 
 function matchesSubscriptionContext(context, deltaContext, selfId) {

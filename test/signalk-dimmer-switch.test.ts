@@ -54,12 +54,7 @@ describe('signalk-dimmer-switch', () => {
   it('PUT handler rejects value outside [0, 1] with COMPLETED/400 via sendPutResponse', () => {
     const handler = server.registerPutHandler.getCall(0).args[2]
 
-    handler(
-      'vessels.self',
-      'electrical.lights.cabin.dimmingLevel',
-      1.5,
-      'cb'
-    )
+    handler('vessels.self', 'electrical.lights.cabin.dimmingLevel', 1.5, 'cb')
 
     assert.equal(server.sendPutResponse.callCount, 1)
     const [, , resp] = server.sendPutResponse.getCall(0).args

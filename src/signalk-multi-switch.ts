@@ -28,7 +28,7 @@ export default function (RED: NodeAPI) {
     if (!server) {
       return
     }
-    const globalContext : NodeContext = node.context().global
+    const globalContext: NodeContext = node.context().global
 
     if (config.options.length === 0) {
       node.error('at least one option must be defined')
