@@ -166,6 +166,15 @@ export default function (RED: NodeAPI) {
       const option = getOptionWithValue(msg.payload)
       if (option) {
         globalContext.set(path, option.value, storeName, (err) => {
+          if (err) {
+            node.error(`error setting value: ${err}`)
+            node.status({
+              fill: 'red',
+              shape: 'dot',
+              text: `error setting value: ${err}`
+            })
+            return
+          }
           sendUpdate(option.value)
           node.status({
             fill: 'green',

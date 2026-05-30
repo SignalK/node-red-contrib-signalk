@@ -1,4 +1,4 @@
-import { NodeAPI, Node } from 'node-red'
+import { NodeAPI } from 'node-red'
 import coreDebug from 'debug'
 import { getServer } from './config-client.js'
 const debug = coreDebug('node-red-contrib-signalk:signalk-slider-switch')
@@ -82,9 +82,8 @@ export default function (RED: NodeAPI) {
       server.handleMessage(node, delta)
     }
 
-    function setValue(value) {
+    function setValue(value, cb) {
       const parsed = parseValue(value)
-      let resp
       if (parsed === undefined) {
         node.error(
           `invalid value: ${value} (must be a number between ${rangeMin} and ${rangeMax})`
@@ -94,47 +93,69 @@ export default function (RED: NodeAPI) {
           shape: 'dot',
           text: `invalid value: ${value}`
         })
-        resp = {
+        cb({
           state: 'COMPLETED',
           statusCode: 400,
           message: 'Invalid value'
+        })
+        return
+      }
+
+      globalContext.set(path, parsed, storeName, (err) => {
+        if (err) {
+          node.error(`error setting value: ${err}`)
+          node.status({
+            fill: 'red',
+            shape: 'dot',
+            text: `error setting value: ${err}`
+          })
+          cb({
+            state: 'COMPLETED',
+            statusCode: 500,
+            message: err.toString()
+          })
+          return
         }
-      } else {
-        globalContext.set(path, parsed, storeName)
         sendValue(parsed)
-        resp = {
+        cb({
           state: 'COMPLETED',
           statusCode: 200,
           value: parsed
-        }
-      }
-      return resp
+        })
+      })
     }
 
     function handlePut(context, path, value, cbInfo) {
-      const res = setValue(value)
-      if (res.statusCode !== 200) {
-        return res
-      }
+      setValue(value, (res) => {
+        if (res.statusCode !== 200) {
+          server.sendPutResponse(node, cbInfo, res)
+          return
+        }
 
-      if (config.pending) {
-        node.send({ topic: path, payload: res.value, cbInfo })
+        if (config.pending) {
+          node.send({ topic: path, payload: res.value, cbInfo })
+          node.status({
+            fill: 'green',
+            shape: 'dot',
+            text: `pending value ${res.value}`
+          })
+          return
+        }
+
+        node.send({ topic: path, payload: res.value })
         node.status({
           fill: 'green',
           shape: 'dot',
-          text: `pending value ${res.value}`
+          text: `value: ${res.value}`
         })
-        return {
-          state: 'PENDING',
-          statusCode: 202
-        }
-      }
-
-      node.send({ topic: path, payload: res.value })
-      node.status({ fill: 'green', shape: 'dot', text: `value: ${res.value}` })
+        server.sendPutResponse(node, cbInfo, {
+          state: 'COMPLETED',
+          statusCode: 200
+        })
+      })
       return {
-        state: 'COMPLETED',
-        statusCode: 200
+        state: 'PENDING',
+        statusCode: 202
       }
     }
 
@@ -147,8 +168,17 @@ export default function (RED: NodeAPI) {
 
       globalContext.get(path, storeName, (err, value) => {
         const initial = value !== undefined ? value : rangeMin
-        globalContext.set(path, initial, storeName)
-        node.status({ fill: 'green', shape: 'dot', text: `value: ${initial}` })
+        globalContext.set(path, initial, storeName, (setErr) => {
+          if (setErr) {
+            node.error(`error setting value: ${setErr}`)
+            return
+          }
+          node.status({
+            fill: 'green',
+            shape: 'dot',
+            text: `value: ${initial}`
+          })
+        })
       })
 
       resendInterval = setInterval(() => {
@@ -166,15 +196,16 @@ export default function (RED: NodeAPI) {
     server.on('available', onConnect)
 
     node.on('input', (msg) => {
-      const res = setValue(msg.payload)
-      if (res.statusCode === 200) {
-        node.send({ topic: path, payload: res.value })
-        node.status({
-          fill: 'green',
-          shape: 'dot',
-          text: `value: ${res.value}`
-        })
-      }
+      setValue(msg.payload, (res) => {
+        if (res.statusCode === 200) {
+          node.send({ topic: path, payload: res.value })
+          node.status({
+            fill: 'green',
+            shape: 'dot',
+            text: `value: ${res.value}`
+          })
+        }
+      })
     })
 
     node.on('close', function () {
