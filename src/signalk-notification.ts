@@ -8,7 +8,7 @@ export default function (RED: NodeAPI) {
     RED.nodes.createNode(this, config)
     const node = this
 
-    const server = getServer(RED, node)
+    const server = getServer(RED, node, config)
 
     if (!server) {
       return

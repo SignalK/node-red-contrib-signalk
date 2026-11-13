@@ -23,7 +23,7 @@ export default function (RED: NodeAPI) {
       })
     }
 
-    const server = getServer(RED, node)
+    const server = getServer(RED, node, config)
 
     if (!server) {
       return

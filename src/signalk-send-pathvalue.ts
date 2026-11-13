@@ -10,7 +10,7 @@ export default function (RED: NodeAPI) {
 
     const sentMeta = {}
 
-    this.server = getServer(RED, node)
+    this.server = getServer(RED, node, config)
 
     if (!this.server) {
       return
