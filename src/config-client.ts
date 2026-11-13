@@ -47,8 +47,8 @@ export interface SignalKServer {
 const embeddedClientId = 'sk-embeded-id'
 let createEmbeddedClient
 
-export function getServer(RED: NodeAPI, node): SignalKServer | null {
-  let server = RED.nodes.getNode(node.server)
+export function getServer(RED: NodeAPI, node, config): SignalKServer | null {
+  let server = RED.nodes.getNode(config.server)
   if (!server) {
     if (node.context().global.get('isSKEmbedded')) {
       server = RED.nodes.getNode(embeddedClientId)
